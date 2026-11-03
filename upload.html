@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOBHA Inventory Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #F4EFE6; 
+            --surface: #FBF7EE; 
+            --surface-card: #FFFFFF;
+            --surface-hover: #FAF6ED;
+            --ink: #0B1E2F; 
+            --ink-soft: #5A6B7C;
+            --line: #DDD4C1; 
+            --line-strong: #C9BFA6;
+            --accent: #B7945A; 
+            --accent-2: #8E6C34;
+            --accent-light: #F8F3E9;
+            --serif: 'Cormorant Garamond', 'Times New Roman', serif;
+            --sans: 'Manrope', system-ui, sans-serif;
+            --mono: 'JetBrains Mono', ui-monospace, monospace;
+            --topbar-h: 76px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            font-family: var(--sans);
+            color: var(--ink);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Topbar Header */
+        .topbar { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            height: var(--topbar-h); 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0 30px; 
+            background: var(--surface); 
+            border-bottom: 1px solid var(--line); 
+            z-index: 500; 
+        }
+
+        .brand { 
+            display: flex; 
+            align-items: center; 
+            gap: 14px; 
+            height: 100%;
+        }
+
+        .brand-logo { 
+            height: 26px; 
+            width: auto; 
+            display: block; 
+            mix-blend-mode: multiply; 
+        }
+
+        .brand-divider { 
+            width: 1px; 
+            height: 16px; 
+            background: var(--line-strong); 
+        }
+
+        .brand-crumb { 
+            display: flex; 
+            align-items: center; 
+            gap: 9px; 
+            font-family: var(--mono); 
+            font-size: 10.5px; 
+            letter-spacing: 0.04em; 
+        }
+
+        .cc-tag { 
+            color: var(--ink-soft); 
+            letter-spacing: 0.18em; 
+            text-transform: uppercase; 
+            font-size: 9px; 
+        }
+
+        .cc-sep { color: var(--line-strong); }
+        .cc-page { color: var(--accent-2); font-family: var(--serif); font-style: italic; font-size: 13px; }
+
+        /* Right Navigation Menu */
+        .nav-menu {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-item {
+            font-family: var(--sans);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--ink-soft);
+            padding: 11px 22px;
+            border-radius: 999px;
+            transition: .15s;
+            cursor: pointer;
+            user-select: none;
+            border: none;
+            background: transparent;
+        }
+
+        .nav-item:hover {
+            color: var(--ink);
+            background: rgba(11, 30, 47, 0.06);
+        }
+
+        .nav-item.active {
+            color: #fff;
+            background: var(--ink);
+        }
+
+        /* Main Container */
+        .main-container {
+            margin-top: var(--topbar-h);
+            padding: 60px 30px;
+            max-width: 1400px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .header-section {
+            margin-bottom: 40px;
+            text-align: left;
+        }
+
+        .header-section h1 {
+            font-family: var(--serif);
+            font-size: 38px;
+            font-weight: 400;
+            color: var(--ink);
+            letter-spacing: -0.01em;
+            margin-bottom: 8px;
+        }
+
+        .header-section p {
+            color: var(--ink-soft);
+            font-size: 14px;
+            letter-spacing: 0.02em;
+        }
+
+        /* Grid Layout */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+            gap: 32px;
+        }
+
+        .upload-card {
+            background: var(--surface-card);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 36px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: box-shadow 0.2s ease;
+            box-shadow: 0 4px 20px rgba(11, 30, 47, 0.03);
+            position: relative;
+        }
+
+        .upload-card:hover {
+            box-shadow: 0 8px 30px rgba(11, 30, 47, 0.06);
+        }
+
+        .upload-card.dev-mode {
+            background: #FAF8F5;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .card-badge {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            background: var(--accent-light);
+            color: var(--accent-2);
+            border-radius: 4px;
+            border: 1px solid var(--line);
+        }
+
+        .card-badge.dev-badge {
+            background: #FFF3E0;
+            color: #E65100;
+            border-color: #FFE0B2;
+        }
+
+        .card-title {
+            font-family: var(--serif);
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--ink);
+            margin-top: 8px;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            color: var(--ink-soft);
+            margin-top: 4px;
+            line-height: 1.5;
+        }
+
+        /* Drop Zone */
+        .drop-zone {
+            border: 1.5px dashed var(--line-strong);
+            background: var(--surface);
+            border-radius: 6px;
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+            position: relative;
+        }
+
+        .drop-zone:hover {
+            background: var(--accent-light);
+            border-color: var(--accent);
+        }
+
+        .drop-zone input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            width: 32px;
+            height: 32px;
+            stroke: var(--accent);
+            stroke-width: 1.5;
+            fill: none;
+            margin-bottom: 12px;
+        }
+
+        .drop-zone-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .drop-zone-subtext {
+            font-size: 11px;
+            color: var(--ink-soft);
+            margin-top: 4px;
+        }
+
+        .file-name-display {
+            margin-top: 12px;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--accent-2);
+            word-break: break-all;
+        }
+
+        /* Upload Button */
+        .btn-upload {
+            margin-top: 24px;
+            width: 100%;
+            padding: 14px 24px;
+            background: var(--ink);
+            color: #FFFFFF;
+            font-family: var(--sans);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-upload:hover {
+            background: var(--accent-2);
+        }
+
+        /* Status Output Box */
+        .status-box {
+            margin-top: 16px;
+            padding: 12px 14px;
+            border-radius: 4px;
+            font-family: var(--mono);
+            font-size: 11px;
+            display: none;
+            max-height: 120px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        .status-box.success {
+            display: block;
+            background: #E8F5E9;
+            color: #1B5E20;
+            border: 1px solid #C8E6C9;
+        }
+
+        .status-box.error {
+            display: block;
+            background: #FFEBEE;
+            color: #C62828;
+            border: 1px solid #FFCDD2;
+        }
+
+        .status-box.dev {
+            display: block;
+            background: #FFF8E1;
+            color: #B78103;
+            border: 1px solid #FFE082;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1100px) {
+            .topbar {
+                padding: 0 16px;
+            }
+            .brand-crumb {
+                display: none;
+            }
+            .main-container {
+                padding: 40px 16px;
+            }
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <header class="topbar">
+        <div class="brand">
+            <a href="first.html" class="brand-logo-link">
+                <img src="sobha-logo.png" class="brand-logo" alt="SOBHA">
+            </a>
+            <span class="brand-divider"></span>
+            <div class="brand-crumb">
+                <span class="cc-tag">India</span>
+                <span class="cc-sep">|</span>
+                <span class="cc-page">Data Import</span>
+            </div>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="first.html" class="nav-item active">HOME</a>
+        </nav>
+        
+    </header>
+
+</body>
+</html>
+
+    <!-- Main Content Area -->
+    <main class="main-container">
+        
+        <div class="header-section">
+            <h1>SOBHA Inventory Management</h1>
+            <p>Select your worksheet module to synchronize live updates with the server.</p>
+        </div>
+
+        <div class="cards-grid">
+            
+            <!-- 1. Availability Updates (ACTIVE FUNCTIONALITY) -->
+            <div class="upload-card">
+                <div>
+                    <div class="card-header">
+                        <div>
+                            <span class="card-badge">Module 01</span>
+                            <h2 class="card-title">Availability Updates</h2>
+                            <p class="card-desc">Sync current unit releases, availability status, and inventory blocks.</p>
+                        </div>
+                    </div>
+
+                    <div class="drop-zone" id="availabilityDropZone">
+                        <svg class="upload-icon" viewBox="0 0 24 24">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                        </svg>
+                        <div class="drop-zone-text">Click or Drag & Drop Availability Excel</div>
+                        <div class="drop-zone-subtext">Supports Microsoft Excel (.xlsx)</div>
+                        <input type="file" id="availabilityFile" accept=".xlsx" onchange="handleFileSelect('availability')">
+                    </div>
+
+                    <div class="file-name-display" id="availabilityFileName"></div>
+                </div>
+
+                <div>
+                    <button class="btn-upload" onclick="uploadAvailability()">
+                        Upload Availability File
+                    </button>
+                    <div class="status-box" id="availabilityResult"></div>
+                </div>
+            </div>
+
+            <!-- 2. Sales Updates (UNDER DEVELOPMENT) -->
+            <div class="upload-card dev-mode">
+                <div>
+                    <div class="card-header">
+                        <div>
+                            <span class="card-badge dev-badge">Module 02 · Coming Soon</span>
+                            <h2 class="card-title">Sales Updates</h2>
+                            <p class="card-desc">Import sales metrics, revenue reports, and property booking sheets.</p>
+                        </div>
+                    </div>
+
+                    <div class="drop-zone" id="salesDropZone">
+                        <svg class="upload-icon" viewBox="0 0 24 24">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                        </svg>
+                        <div class="drop-zone-text">Click or Drag & Drop Sales Excel</div>
+                        <div class="drop-zone-subtext">Supports Microsoft Excel (.xlsx)</div>
+                        <input type="file" id="salesFile" accept=".xlsx" onchange="handleFileSelect('sales')">
+                    </div>
+
+                    <div class="file-name-display" id="salesFileName"></div>
+                </div>
+
+                <div>
+                    <button class="btn-upload" onclick="handleSalesUpload()">
+                        Upload Sales File
+                    </button>
+                    <div class="status-box" id="salesResult"></div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        function handleFileSelect(type) {
+            const input = document.getElementById(type + 'File');
+            const fileNameDisplay = document.getElementById(type + 'FileName');
+            
+            if (input.files && input.files[0]) {
+                fileNameDisplay.textContent = 'Selected: ' + input.files[0].name;
+            } else {
+                fileNameDisplay.textContent = '';
+            }
+        }
+
+        function uploadAvailability() {
+            const input = document.getElementById('availabilityFile');
+            const resultBox = document.getElementById('availabilityResult');
+            
+            if (!input.files || input.files.length === 0) {
+                resultBox.className = 'status-box error';
+                resultBox.textContent = 'Error: Please select an Excel (.xlsx) file first.';
+                return;
+            }
+
+            resultBox.className = 'status-box success';
+            resultBox.textContent = 'Success: Availability file "' + input.files[0].name + '" uploaded successfully!';
+        }
+
+        function handleSalesUpload() {
+            const resultBox = document.getElementById('salesResult');
+            resultBox.className = 'status-box dev';
+            resultBox.textContent = 'Notice: Module 02 (Sales Updates) is currently under development.';
+        }
+    
+        // Display selected file name
+        function handleFileSelect(type) {
+            const input = document.getElementById(type + 'File');
+            const fileNameDisplay = document.getElementById(type + 'FileName');
+            
+            if (input.files.length > 0) {
+                fileNameDisplay.textContent = "Selected: " + input.files[0].name;
+            } else {
+                fileNameDisplay.textContent = "";
+            }
+        }
+
+        // Active Functionality: Availability Upload (FastAPI API Call)
+        async function uploadAvailability() {
+            const input = document.getElementById("availabilityFile");
+            const file = input.files[0];
+            const resultBox = document.getElementById("availabilityResult");
+
+            resultBox.className = "status-box";
+            
+            if (!file) {
+                resultBox.classList.add("error");
+                resultBox.textContent = "Please select an Excel file before uploading.";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                resultBox.style.display = "block";
+                resultBox.className = "status-box";
+                resultBox.textContent = "Uploading and parsing file...";
+
+                const response = await fetch("http://127.0.0.1:8000/get_excel", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || data.error || "Upload failed");
+                }
+
+                resultBox.classList.add("success");
+                resultBox.textContent = "Upload Successful:\n" + JSON.stringify(data, null, 2);
+                console.log("FastAPI response:", data);
+
+            } catch (error) {
+                resultBox.classList.add("error");
+                resultBox.textContent = "Error: " + error.message;
+                console.error(error);
+            }
+        }
+
+        // Feature Flag: Sales Updates (Under Development)
+        function handleSalesUpload() {
+            const resultBox = document.getElementById("salesResult");
+            resultBox.className = "status-box dev";
+            resultBox.textContent = "⚠️ Notice: The Sales Updates module is currently under development. Backend processing for this endpoint will be available soon.";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SOBHA · Under Development</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {bg: '#F4EFE6',surface: '#FBF7EE','surface-2': '#EFE8DA',ink: '#0B1E2F','ink-soft': '#5A6B7C',line: '#DDD4C1','line-strong': '#C9BFA6', accent: '#B7945A','accent-2': '#8E6C34',},
+        fontFamily: {serif: ['Cormorant Garamond', 'serif'],sans: ['Manrope', 'sans-serif'],mono: ['JetBrains Mono', 'monospace'],}}}}
+</script>
+<style>
+:root {
+  --bg:#F4EFE6; --surface:#FBF7EE; --surface-2:#EFE8DA;
+  --ink:#0B1E2F; --ink-soft:#5A6B7C;
+  --line:#DDD4C1; --line-strong:#C9BFA6;
+  --accent:#B7945A; --accent-2:#8E6C34;
+  --topbar-h:76px;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+html, body { 
+  height: 100vh;
+  max-height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: var(--bg); 
+  color: var(--ink); 
+  font-family: 'Manrope', sans-serif; 
+  -webkit-font-smoothing: antialiased; 
+}
+
+/* Background Gradients */
+body {
+  background-image: radial-gradient(circle at 50% 30%, rgba(183,148,90,0.12) 0%, 
+  transparent 60%),radial-gradient(circle at 80% 90%, rgba(11,30,47,0.06) 0%, transparent 50%);
+}
+
+#animStage {
+  width: 100%;
+  height: calc(100vh - var(--topbar-h));
+  position: relative;
+}
+.nav-menu {
+            display: flex;
+            align-items: center;
+        }
+
+/* Pulse Glow for Upgrade Button */
+@keyframes goldGlow {
+  0%, 100% { box-shadow: 0 0 15px rgba(183, 148, 90, 0.3), 0 0 30px rgba(183, 148, 90, 0.1); }
+  50% { box-shadow: 0 0 25px rgba(183, 148, 90, 0.6), 0 0 50px rgba(183, 148, 90, 0.3); }
+}
+.gold-glow { animation: goldGlow 2.5s infinite ease-in-out; }
+.brand-logo { height:26px; width:auto; display:block; mix-blend-mode:multiply; }
+</style>
+</head>
+<body class="select-none">
+
+<!-- ================= TOP BAR ================= -->
+<header class="fixed top-0 left-0 right-0 h-[76px] flex items-center justify-between px-7 bg-surface border-b border-line z-[500]">
+  <div class="flex items-center gap-6 h-full">
+    <a href="first.html" class="brand-logo-link">
+      <img src="sobha-logo.png" class="brand-logo" alt="SOBHA">
+    </a>
+    <span class="w-px h-5 bg-line-strong hidden sm:block"></span>
+  </div>
+  <nav class="nav-menu">
+    <a href="first.html" class="nav-item active">HOME</a>
+  </nav>
+</header>
+
+<!-- ================= MAIN STAGE ================= -->
+<main id="animStage" class="pt-[76px] flex flex-col justify-between items-center relative">
+  
+  <!-- Architectural Luxury Backdrop Graphic -->
+  <div class="absolute inset-0 pointer-events-none opacity-25 flex items-end justify-center px-8 pb-4">
+    <svg class="w-full max-w-6xl h-64 text-accent" viewBox="0 0 1000 300" fill="none" stroke="currentColor" stroke-width="1.2">
+      <path d="M50,300 L50,150 L120,150 L120,300 M120,180 L200,180 L200,300 M240,300 L240,100 L320,80 L400,100 L400,300 M450,300 L450,120 L550,120 L550,300 M600,300 L600,90 L700,90 L700,300 M750,300 L750,160 L850,160 L850,300 M900,300 L900,140 L960,140 L960,300" />
+      <line x1="0" y1="300" x2="1000" y2="300" stroke-width="2" />
+      <path d="M360,80 L360,20 L480,20 M360,35 L400,20" stroke-dasharray="3,3" />
+    </svg>
+  </div>
+
+  <!-- Interactive Story Canvas -->
+  <div class="relative w-full h-full flex flex-col items-center justify-center">
+    
+    <!-- Dynamic Text Heading Banner -->
+    <div class="text-center z-10 mb-2 px-4 transition-all duration-500" id="headerTextGroup">
+      <div class="font-mono text-[10px] md:text-xs font-semibold tracking-[0.3em] uppercase text-accent mb-1 flex items-center justify-center gap-2">
+        <span class="w-6 h-px bg-accent"></span>
+        SOBHA DIGITAL EXPERIENCE
+        <span class="w-6 h-px bg-accent"></span>
+      </div>
+      <h1 class="font-serif text-3xl md:text-5xl lg:text-6xl font-light text-ink leading-tight" id="mainTitle">
+        Building Something <em></em>
+      </h1>
+      <p class="font-serif text-sm md:text-lg text-ink-soft max-w-lg mx-auto italic mt-1" id="subTitle">
+        
+      </p>
+    </div>
+
+    <!-- Canvas Animation Box -->
+    <div class="relative w-full max-w-3xl h-[340px] md:h-[400px] flex items-center justify-center">
+      <canvas id="minionCanvas" class="w-full h-full cursor-pointer"></canvas>
+    </div>
+
+    <!-- Interactive Control Deck -->
+    <div class="z-20 mt-2 flex flex-wrap items-center justify-center gap-3 px-4">
+      
+      <button id="upgradeBtn" onclick="upgradeMinion()" class="px-6 py-2.5 bg-ink text-white font-mono text-xs uppercase tracking-widest rounded-full transition-all gold-glow hover:bg-accent active:scale-95 flex items-center gap-2">
+        <span>✨</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Bottom Notice Bar -->
+  <footer class="w-full py-3 px-6 bg-surface border-t border-line text-center font-mono text-[10px] text-ink-soft tracking-widest uppercase flex justify-between items-center z-10">
+    <div id="muteToggle" class="cursor-pointer select-none py-1 px-2 rounded bg-surface-2 hover:bg-line transition-all border border-line flex items-center gap-1.5" title="Double tap to Mute / Unmute">
+      <span id="muteIcon"></span>
+      <span id="muteText" class="text-[9px] font-semibold"></span>
+    </div>
+    <span class="hidden sm:inline"></span>
+  </footer>
+
+</main>
+
+<script>
+
+let audioCtx = null;
+let isMuted = false;
+let lastTapTime = 0;
+
+function getAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+
+function playStepSound() {
+  if (isMuted) return;
+  try {
+    const ctx = getAudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(140 + Math.random() * 40, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.06);
+    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.06);
+  } catch(e) {}
+}
+
+function playWindSound() {
+  if (isMuted) return;
+  try {
+    const ctx = getAudioContext();
+    const bufferSize = ctx.sampleRate * 0.15;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(400, ctx.currentTime);
+    filter.Q.setValueAtTime(2, ctx.currentTime);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    noise.start();
+  } catch(e) {}
+}
+
+function playFallSound() {
+  if (isMuted) return;
+  try {
+    const ctx = getAudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(200, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.3);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.3);
+  } catch(e) {}
+}
+
+function playDizzyChime() {
+  if (isMuted) return;
+  try {
+    const ctx = getAudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    const freqs = [523.25, 659.25, 783.99, 1046.50];
+    const f = freqs[Math.floor(Math.random() * freqs.length)];
+    osc.frequency.setValueAtTime(f, ctx.currentTime);
+    gain.gain.setValueAtTime(0.06, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.12);
+  } catch(e) {}
+}
+
+function playSparkleSound() {
+  if (isMuted) return;
+  try {
+    const ctx = getAudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(800 + Math.random() * 600, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1600, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.1);
+  } catch(e) {}
+}
+
+
+const muteToggle = document.getElementById('muteToggle');
+function handleDoubleTap(e) {
+  const currentTime = new Date().getTime();
+  const tapLength = currentTime - lastTapTime;
+  if (tapLength < 300 && tapLength > 0) {
+    isMuted = !isMuted;
+    document.getElementById('muteIcon').innerText = isMuted ? '🔇' : '🔊';
+    document.getElementById('muteText').innerText = isMuted ? 'MUTED (DBL TAP TO UNMUTE)' : 'SOUND ON (DBL TAP TO TOGGLE)';
+    e.preventDefault();
+  }
+  lastTapTime = currentTime;
+}
+muteToggle.addEventListener('click', handleDoubleTap);
+muteToggle.addEventListener('touchend', handleDoubleTap);
+
+
+const canvas = document.getElementById('minionCanvas');
+const ctx = canvas.getContext('2d', { alpha: false });
+
+let width, height;
+let animState = 0; 
+let frameCount = 0;
+let minionX = -100;
+let minionY = 0;
+let windParticles = [];
+let stars = [];
+let combProgress = 0;
+
+
+function setNavTab(index) {
+  for (let i = 0; i < 3; i++) {
+    const btn = document.getElementById(`navBtn${i}`);
+    if (i === index) {
+      btn.className = "px-5 md:px-6 py-2 rounded-full font-mono text-xs tracking-wider transition-all bg-ink text-white shadow-sm";
+    } else {
+      btn.className = "px-5 md:px-6 py-2 rounded-full font-mono text-xs tracking-wider transition-all text-ink-soft hover:text-ink";
+    }
+  }
+}
+
+
+function resizeCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  width = canvas.offsetWidth;
+  height = canvas.offsetHeight;
+  
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+  ctx.scale(dpr, dpr);
+  
+  minionY = height * 0.65;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// Initialize Wind Particles
+for (let i = 0; i < 35; i++) {
+  windParticles.push({
+    x: Math.random() * 1000,
+    y: Math.random() * 400,
+    speed: 8 + Math.random() * 10,
+    size: 2 + Math.random() * 3,
+    leaf: Math.random() > 0.5
+  });
+}
+
+// Initialize Dizzy Stars
+for (let i = 0; i < 4; i++) {
+  stars.push({
+    angle: (i * Math.PI / 2),
+    radius: 35
+  });
+}
+
+// MAIN RENDER LOOP (Optimized for smooth 60fps)
+function render() {
+  frameCount++;
+  
+  // Clear background cleanly
+  ctx.fillStyle = '#FBF7EE';
+  ctx.fillRect(0, 0, width, height);
+
+  // Draw Ground Line with SOBHA Luxury Accent
+  ctx.strokeStyle = '#DDD4C1';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, height * 0.78);
+  ctx.lineTo(width, height * 0.78);
+  ctx.stroke();
+
+  // State Machine Logic
+  if (animState === 0) {
+    minionX += 2.2;
+    if (frameCount % 15 === 0) playStepSound();
+    if (minionX > width * 0.42) {
+      animState = 1;
+    }
+    drawMinionStrut(minionX, minionY, frameCount);
+  } 
+  else if (animState === 1) {
+    drawWindStorm();
+    if (frameCount % 8 === 0) playWindSound();
+    minionX += 0.8;
+    drawMinionBlownByWind(minionX, minionY, frameCount);
+    
+    if (frameCount % 65 === 0) {
+      animState = 2;
+      playFallSound();
+    }
+  }
+  else if (animState === 2) {
+    drawTripFall(minionX, minionY, frameCount);
+    setTimeout(() => {
+      animState = 3;
+      document.getElementById('mainTitle').innerHTML = "Coming Soon — <em></em>";
+      document.getElementById('subTitle').innerText = "We're working towards bringing you new features and updates. Stay tuned!";
+    }, 600);
+  }
+  else if (animState === 3 || animState === 4) {
+    if (animState === 3 && frameCount % 25 === 0) playDizzyChime();
+    drawDizzyMinion(width * 0.48, minionY + 10, frameCount);
+    
+    if (animState === 4 && combProgress < 1) {
+      combProgress += 0.025;
+      if (frameCount % 5 === 0) playSparkleSound();
+      drawCombAnimation(width * 0.48, minionY - 60, combProgress);
+    }
+  }
+
+  requestAnimationFrame(render);
+}
+
+/* ===== MINION DRAWING ROUTINES ===== */
+
+function drawMinionStrut(x, y, frame) {
+  const bounce = Math.sin(frame * 0.2) * 6;
+  const legSwing = Math.sin(frame * 0.2) * 14;
+
+  ctx.save();
+  ctx.translate(x, y + bounce);
+
+  // Shadow
+  ctx.fillStyle = 'rgba(11,30,47,0.12)';
+  ctx.beginPath();
+  ctx.ellipse(0, 42, 30, 8, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Legs & Boots
+  ctx.fillStyle = '#0B1E2F';
+  ctx.fillRect(-14 + legSwing, 25, 10, 18);
+  ctx.fillRect(4 - legSwing, 25, 10, 18);
+
+  // Body
+  ctx.fillStyle = '#FACC15';
+  ctx.beginPath();
+  ctx.roundRect(-28, -45, 56, 72, 28);
+  ctx.fill();
+
+  // Overalls
+  ctx.fillStyle = '#1E3A8A';
+  ctx.fillRect(-28, 5, 56, 22);
+  ctx.fillRect(-18, -10, 36, 18);
+  
+  ctx.strokeStyle = '#1E3A8A';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(-22, -22); ctx.lineTo(-14, -8);
+  ctx.moveTo(22, -22); ctx.lineTo(14, -8);
+  ctx.stroke();
+
+  // SOBHA Logo on Chest
+  ctx.fillStyle = '#B7945A';
+  ctx.font = 'bold 8px JetBrains Mono';
+  ctx.fillText('SOBHA', -14, 2);
+
+  // Goggle & Eye
+  ctx.fillStyle = '#94A3B8';
+  ctx.beginPath();
+  ctx.arc(0, -22, 16, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.arc(0, -22, 11, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#451A03';
+  ctx.beginPath();
+  ctx.arc(2, -22, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#0B1E2F';
+  ctx.fillRect(-28, -25, 12, 6);
+  ctx.fillRect(16, -25, 12, 6);
+
+  // Smile
+  ctx.strokeStyle = '#0B1E2F';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.arc(0, -8, 8, 0.1 * Math.PI, 0.9 * Math.PI);
+  ctx.stroke();
+
+  // Hardhat
+  ctx.fillStyle = '#B7945A';
+  ctx.beginPath();
+  ctx.arc(0, -42, 30, Math.PI, 0);
+  ctx.fill();
+  ctx.fillRect(-33, -42, 66, 6);
+
+  ctx.restore();
+}
+
+function drawMinionBlownByWind(x, y, frame) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(-0.25);
+
+  ctx.fillStyle = '#FACC15';
+  ctx.beginPath();
+  ctx.roundRect(-28, -45, 56, 72, 28);
+  ctx.fill();
+
+  ctx.fillStyle = '#1E3A8A';
+  ctx.fillRect(-28, 5, 56, 22);
+  ctx.fillRect(-18, -10, 36, 18);
+
+  ctx.fillStyle = '#94A3B8';
+  ctx.beginPath();
+  ctx.arc(5, -22, 16, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.arc(5, -22, 11, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#000000';
+  ctx.beginPath();
+  ctx.arc(7, -22, 3, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#0B1E2F';
+  ctx.beginPath();
+  ctx.arc(5, -5, 7, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.save();
+  ctx.translate(35, -60);
+  ctx.rotate(0.5);
+  ctx.fillStyle = '#B7945A';
+  ctx.beginPath();
+  ctx.arc(0, 0, 24, Math.PI, 0);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.restore();
+}
+
+function drawTripFall(x, y, frame) {
+  ctx.save();
+  ctx.translate(x + 20, y + 25);
+  ctx.rotate(1.3);
+
+  ctx.fillStyle = '#FACC15';
+  ctx.beginPath();
+  ctx.roundRect(-28, -45, 56, 72, 28);
+  ctx.fill();
+
+  ctx.fillStyle = '#1E3A8A';
+  ctx.fillRect(-28, 5, 56, 22);
+
+  ctx.fillStyle = 'rgba(218, 203, 176, 0.6)';
+  ctx.beginPath();
+  ctx.arc(-35, -20, 20, 0, Math.PI * 2);
+  ctx.arc(-45, -10, 15, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawDizzyMinion(x, y, frame) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  ctx.fillStyle = 'rgba(11,30,47,0.15)';
+  ctx.beginPath();
+  ctx.ellipse(0, 38, 45, 10, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = '#0B1E2F';
+  ctx.lineWidth = 2.5;
+  
+  if (animState === 3) {
+    for (let i = -24; i <= 24; i += 8) {
+      ctx.beginPath();
+      ctx.moveTo(i, -42);
+      ctx.lineTo(i * 1.6 + Math.sin(frame * 0.3 + i) * 4, -68 - Math.abs(i) * 0.3);
+      ctx.stroke();
+    }
+  } else {
+    ctx.strokeStyle = '#B7945A';
+    ctx.lineWidth = 3;
+    for (let i = -18; i <= 18; i += 6) {
+      ctx.beginPath();
+      ctx.moveTo(i, -42);
+      ctx.quadraticCurveTo(i * 0.5, -58, i * 0.2, -52);
+      ctx.stroke();
+    }
+  }
+
+  ctx.fillStyle = '#FACC15';
+  ctx.beginPath();
+  ctx.roundRect(-30, -42, 60, 75, 26);
+  ctx.fill();
+
+  ctx.fillStyle = '#1E3A8A';
+  ctx.fillRect(-30, 8, 60, 25);
+  ctx.fillRect(-20, -5, 40, 18);
+
+  ctx.fillStyle = '#B7945A';
+  ctx.font = 'bold 8px JetBrains Mono';
+  ctx.fillText('SOBHA', -14, 6);
+
+  ctx.fillStyle = '#94A3B8';
+  ctx.beginPath();
+  ctx.arc(0, -20, 18, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.arc(0, -20, 13, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  const pupilAngle = frame * 0.15;
+  ctx.arc(Math.cos(pupilAngle) * 3, -20 + Math.sin(pupilAngle) * 3, 3, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.fillStyle = '#0B1E2F';
+  ctx.beginPath();
+  ctx.arc(0, -4, 10, 0, Math.PI);
+  ctx.fill();
+
+  ctx.fillStyle = '#FFFFFF';
+  if (animState === 3) {
+    ctx.fillRect(-6, -4, 5, 4);
+    ctx.fillRect(2, -4, 3, 2);
+  } else {
+    ctx.fillRect(-7, -4, 6, 4);
+    ctx.fillRect(1, -4, 6, 4);
+  }
+
+  if (animState === 3) {
+    stars.forEach((s) => {
+      s.angle += 0.05;
+      const sx = Math.cos(s.angle) * s.radius;
+      const sy = -75 + Math.sin(s.angle) * 8;
+
+      ctx.fillStyle = '#B7945A';
+      ctx.font = '14px sans-serif';
+      ctx.fillText('⭐', sx - 6, sy);
+    });
+  } else {
+    ctx.fillStyle = '#B7945A';
+    ctx.font = '16px sans-serif';
+    ctx.fillText('✨', -35, -60 + Math.sin(frame * 0.1) * 5);
+    ctx.fillText('✨', 25, -65 + Math.cos(frame * 0.1) * 5);
+  }
+
+  // Board
+  ctx.save();
+  ctx.translate(0, 30);
+
+  ctx.fillStyle = '#8E6C34';
+  ctx.beginPath();
+  ctx.roundRect(-135, -8, 270, 52, 6);
+  ctx.fill();
+
+  ctx.fillStyle = '#FBF7EE';
+  ctx.strokeStyle = '#B7945A';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(-130, -4, 260, 44, 4);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = '#0B1E2F';
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 12px Cormorant Garamond';
+  ctx.fillText('COMING SOON', 0, 11);
+
+  ctx.font = 'bold 9.5px JetBrains Mono';
+  ctx.fillStyle = '#8E6C34';
+  if (animState === 3) {
+    ctx.fillText('✨', 0, 27);
+  } else {
+    ctx.fillText('✨', 0, 27);
+  }
+
+  ctx.restore();
+  ctx.restore();
+}
+
+function drawWindStorm() {
+  ctx.strokeStyle = 'rgba(183, 148, 90, 0.4)';
+  ctx.lineWidth = 1.5;
+
+  windParticles.forEach(p => {
+    p.x += p.speed;
+    if (p.x > width) p.x = -50;
+
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x - 25, p.y + (p.leaf ? 5 : 0));
+    ctx.stroke();
+
+    if (p.leaf) {
+      ctx.fillStyle = '#B7945A';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+}
+
+function drawCombAnimation(targetX, targetY, progress) {
+  ctx.save();
+  const combX = targetX - 40 + (progress * 80);
+  const combY = targetY + Math.sin(progress * Math.PI * 4) * 4;
+
+  ctx.translate(combX, combY);
+  ctx.rotate(-0.3);
+
+  ctx.fillStyle = '#B7945A';
+  ctx.fillRect(-15, -6, 30, 12);
+  for (let t = -12; t <= 12; t += 4) {
+    ctx.fillRect(t, 6, 2, 8);
+  }
+
+  ctx.restore();
+}
+
+// Controls
+function triggerReplay() {
+  animState = 0;
+  minionX = -60;
+  frameCount = 0;
+  combProgress = 0;
+  document.getElementById('mainTitle').innerHTML = "Building Something <em>Extraordinary.</em>";
+  document.getElementById('subTitle').innerText = "Watch our chief mascot prepare the new dashboard experience";
+}
+
+function upgradeMinion() {
+  animState = 4;
+  combProgress = 0;
+  playSparkleSound();
+  document.getElementById('mainTitle').innerHTML = "Byee.... <em></em>";
+  document.getElementById('subTitle').innerText = "";
+}
+
+
+render();
+</script>
+</body>
+</html> 

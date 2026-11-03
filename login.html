@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in · Inventory Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#faf6ee; --cream-2:#f3eee4; --line:#e3dccd;
+    --navy:#0b1f33; --gold:#b8975a; --slate:#5c7288; --err:#9b2c2c; --ok:#2f6b4f;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{
+    min-height:100vh; background:var(--cream); color:var(--navy);
+    font-family:'Space Grotesk',sans-serif; display:flex; flex-direction:column;
+    background-image:radial-gradient(1200px 500px at 70% 10%, #efe8da 0%, transparent 70%);
+  }
+  header{
+    padding:22px 34px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:16px;
+  }
+  .brand{font-family:'Cormorant Garamond',serif; font-size:34px; letter-spacing:.28em; font-weight:500}
+  .sep{width:1px;height:20px;background:var(--gold);opacity:.6}
+  .tag{font-size:11px; letter-spacing:.2em; color:var(--slate); text-transform:uppercase}
+  .sub{font-family:'Cormorant Garamond',serif; font-style:italic; font-size:18px}
+  .sub em{color:var(--gold)}
+  main{flex:1; display:flex; align-items:center; justify-content:center; padding:40px 20px}
+  .card{
+    width:100%; max-width:420px; background:none; border:0; padding:0; box-shadow:none;
+  }
+  .eyebrow{display:flex; align-items:center; gap:12px; font-size:11px; letter-spacing:.3em; color:var(--gold); text-transform:uppercase; margin-bottom:14px}
+  .eyebrow:before{content:"";width:34px;height:1px;background:var(--gold)}
+  h1{font-family:'Cormorant Garamond',serif; font-weight:400; font-size:42px; line-height:1.1}
+  h1 em{color:var(--gold); font-weight:400}
+  .lede{font-family:'Cormorant Garamond',serif; color:var(--slate); font-size:18px; margin:10px 0 26px}
+  label{display:block; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--slate); margin:16px 0 6px}
+  .field{position:relative}
+  input{
+    width:100%; padding:12px 14px; font:inherit; font-size:15px; color:var(--navy);
+    background:var(--cream-2); border:1px solid var(--line); border-radius:4px; outline:none; transition:.15s;
+  }
+  input:focus{border-color:var(--gold); background:#fff}
+  .eye{position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:0; cursor:pointer; color:var(--slate); font-size:11px; letter-spacing:.12em; text-transform:uppercase}
+  .btn{
+    margin-top:26px; width:100%; padding:14px; border:0; border-radius:999px; cursor:pointer;
+    background:var(--navy); color:#fff; font:inherit; font-weight:600; letter-spacing:.18em; text-transform:uppercase; font-size:13px; transition:.15s;
+  }
+  .btn:hover{background:#13304d}
+  .ghost{
+    background:none; border:0; cursor:pointer; font:inherit; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--slate); margin-top:16px;
+  }
+  .ghost:hover{color:var(--navy)}
+  .msg{min-height:20px; margin-top:14px; font-size:13px}
+  .msg.err{color:var(--err)} .msg.ok{color:var(--ok)}
+  .group-title{font-size:11px; letter-spacing:.3em; text-transform:uppercase; color:var(--gold); margin-top:22px; padding-top:18px; border-top:1px solid var(--line)}
+  .group-title:first-of-type{border-top:0; padding-top:0; margin-top:0}
+  .hidden{display:none}
+  /* very transparent add-user button, bottom-left corner */
+  .add-user{
+    position:fixed; left:18px; bottom:16px; background:none; border:0; cursor:pointer;
+    font:inherit; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--navy);
+    opacity:.22; transition:opacity .2s;
+  }
+  .add-user:hover{opacity:.85}
+  /* minimal centered login */
+  #loginView{text-align:center}
+  #loginView .eyebrow{justify-content:center}
+  #loginView .eyebrow:after{content:"";width:34px;height:1px;background:var(--gold)}
+  .ifield{position:relative; width:260px; margin:18px auto 0; color:var(--slate)}
+  .ifield svg{position:absolute; left:2px; top:50%; transform:translateY(-50%); opacity:.7}
+  .ifield input{background:transparent; border:0; border-bottom:1px solid var(--line); border-radius:0; padding:10px 40px 10px 28px; text-align:center; font-size:15px}
+  .ifield input:focus{background:transparent; border-bottom-color:var(--gold)}
+  .ifield input::placeholder{color:var(--slate); opacity:.6; letter-spacing:.12em; font-size:12px; text-transform:uppercase}
+  .ifield .eye{right:0}
+  .go{
+    margin-top:26px; padding:9px 22px; border:0; border-radius:999px; cursor:pointer;
+    background:var(--navy); color:#fff; font:inherit; font-size:11px; font-weight:600; letter-spacing:.18em; text-transform:uppercase;
+    opacity:0; visibility:hidden; transform:translateY(6px); transition:opacity .25s, transform .25s, visibility .25s, background .15s;
+  }
+  .go span{display:inline-block; margin-left:6px; transition:transform .2s}
+  .go:hover{background:#13304d} .go:hover span{transform:translateX(3px)}
+  .go.show{opacity:1; visibility:visible; transform:none}
+  /* opening animation: name revolves in a circle, then the login appears */
+  header, main{transition:opacity 1s ease .2s, transform 1s ease .2s}
+  body.intro-on header, body.intro-on .add-user{opacity:0}
+  body.intro-on main{opacity:0; transform:translateY(12px)}
+  #intro{position:fixed; inset:0; z-index:50; background:var(--cream); display:flex; align-items:center; justify-content:center; transition:opacity .9s ease}
+  #intro.done{opacity:0; pointer-events:none}
+  #ring{position:relative; width:0; height:0; animation:spin 2.8s cubic-bezier(.45,0,.2,1) forwards}
+  #ring span{
+    position:absolute; left:0; top:0; transform-origin:0 0; opacity:0;
+    transform:rotate(var(--a)) translate(-50%,-92px);
+    font-family:'Cormorant Garamond',serif; font-size:34px; font-weight:500; color:var(--navy);
+    animation:letterIn .6s ease forwards; animation-delay:calc(var(--i) * .07s);
+    transition:transform 1.1s cubic-bezier(.65,0,.25,1);
+  }
+  @keyframes letterIn{to{opacity:1}}
+  @keyframes spin{
+    from{transform:rotate(-220deg) scale(.55)}
+    75%{transform:rotate(340deg) scale(1)}
+    to{transform:rotate(360deg) scale(1)}
+  }
+  @media(prefers-reduced-motion:reduce){ #intro{display:none} body.intro-on header, body.intro-on main, body.intro-on .add-user{opacity:1; transform:none} }
+  @media(max-width:520px){ header{padding:16px 18px} h1{font-size:36px} .sub{display:none} }
+</style>
+</head>
+<body class="intro-on">
+<div id="intro"><div id="ring"></div></div>
+
+<main>
+  <!-- LOGIN VIEW -->
+  <section class="card" id="loginView">
+    <div class="eyebrow">Sign in</div>
+    <h1>Welcome <em>back</em></h1>
+    <p class="lede">Sign in to continue.</p>
+    <form id="loginForm" autocomplete="off">
+      <div class="ifield">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+        <input id="lu" placeholder="username" required>
+      </div>
+      <div class="ifield">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        <input id="lp" type="password" placeholder="password" required>
+        <button type="button" class="eye" data-for="lp">Show</button>
+      </div>
+      <div class="msg" id="loginMsg"></div>
+      <button class="go" id="goBtn" type="submit">Sign in <span>→</span></button>
+    </form>
+  </section>
+
+  <!-- ADD USER VIEW -->
+  <section class="card hidden" id="addView">
+    <div class="eyebrow">Add user</div>
+    <h1>New <em>user</em></h1>
+    <p class="lede">An existing user must approve before a new user is created.</p>
+    <form id="addForm" autocomplete="off">
+      <div class="group-title">Existing user</div>
+      <label for="eu">Username</label>
+      <input id="eu" required>
+      <label for="ep">Password</label>
+      <div class="field"><input id="ep" type="password" required><button type="button" class="eye" data-for="ep">Show</button></div>
+
+      <div class="group-title">New user</div>
+      <label for="nu">New username</label>
+      <input id="nu" required minlength="3">
+      <label for="np">New password</label>
+      <div class="field"><input id="np" type="password" required minlength="6"><button type="button" class="eye" data-for="np">Show</button></div>
+      <label for="nc">Confirm password</label>
+      <input id="nc" type="password" required>
+
+      <div class="msg" id="addMsg"></div>
+      <button class="btn" type="submit">Create user</button>
+      <button class="ghost" type="button" id="backBtn">← Back to sign in</button>
+    </form>
+  </section>
+
+  <!-- SIGNED IN VIEW -->
+  <section class="card hidden" id="doneView">
+    <div class="eyebrow">Signed in</div>
+    <h1>Hello, <em id="who"></em></h1>
+    <p class="lede">You are logged in. Set DASHBOARD_URL in the script to redirect here automatically.</p>
+    <button class="btn" id="logoutBtn">Sign out</button>
+  </section>
+</main>
+
+<button class="add-user" id="addUserBtn">+ Add new user</button>
+
+<!-- session helpers (30 min login, logout) -->
+<script src="auth.js"></script>
+<script>
+  // Brand name shown in the header and in the opening animation. Change it here.
+  const BRAND_NAME = "SOBHA";
+  (function intro(){
+    const ring = document.getElementById("ring"), chars = [...BRAND_NAME];
+    chars.forEach((c,i)=>{
+      const s = document.createElement("span");
+      s.textContent = c === " " ? "\u00a0" : c;
+      s.style.setProperty("--a", (360/chars.length*i) + "deg");
+      s.style.setProperty("--i", i);
+      ring.appendChild(s);
+    });
+    // 1) circle revolves (CSS, ~2.8s)  2) letters straighten into one line  3) intro fades into the login
+    setTimeout(()=>{
+      const spans = [...ring.children], gap = 3;
+      const widths = spans.map(s => s.offsetWidth);
+      const total = widths.reduce((a,b)=>a+b,0) + gap*(spans.length-1);
+      let x = -total/2;
+      spans.forEach((s,i)=>{
+        s.style.transform = "rotate(0deg) translate(" + x + "px, 0px)";
+        x += widths[i] + gap;
+      });
+    }, 2900);
+    setTimeout(()=>{
+      document.getElementById("intro").classList.add("done");
+      document.body.classList.remove("intro-on");
+      setTimeout(()=>document.getElementById("intro").remove(), 1200);
+    }, 4600);
+  })();
+
+  // Set this to your dashboard page, e.g. "dashboard.html". Leave "" to stay on this page.
+  const DASHBOARD_URL = "home.html";
+  const KEY = "dash_users_v1";
+
+  async function hash(s){
+    try{
+      const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("dash::"+s));
+      return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+    }catch(e){ return "plain::"+s; }
+  }
+  async function users(){
+    let u; try{ u = JSON.parse(localStorage.getItem(KEY)); }catch(e){}
+    if(!u){ u = { admin: await hash("admin123") }; localStorage.setItem(KEY, JSON.stringify(u)); }
+    return u;
+  }
+  const $ = id => document.getElementById(id);
+  const show = v => ["loginView","addView","doneView"].forEach(x => $(x).classList.toggle("hidden", x!==v));
+  const say = (id,t,c) => { const m=$(id); m.textContent=t; m.className="msg "+(c||""); };
+
+  async function check(u,p){ const all = await users(); return all[u] && all[u] === await hash(p); }
+
+  function enter(name){
+    startSession(name);                      // starts the 30 min clock
+    if(DASHBOARD_URL){ location.href = DASHBOARD_URL; return; }
+    $("who").textContent = name; show("doneView");
+  }
+
+  
+$("loginForm").addEventListener("submit", async e => {
+    e.preventDefault();
+
+    const username = $("lu").value.trim();
+    const password = $("lp").value;
+
+    say("loginMsg", "Checking credentials...", "");
+
+    try {
+        const response = await fetch("http://127.0.0.1:8000/logininfo", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                user_id: username,
+                password: password
+            })
+        });
+
+        const result = await response.json();
+
+        console.log("Backend response:", result);
+        console.log("HTTP status:", response.status);
+
+        if (response.ok) {
+            say("loginMsg", result.message || "Login successful", "ok");
+            enter(username);
+        } else {
+            say("loginMsg", result.detail || result.message || "Login failed", "err");
+        }
+
+    } catch (error) {
+        console.error("Fetch error:", error);
+        say("loginMsg", "Cannot connect to FastAPI. Check the backend.", "err");
+    }
+});
+
+
+
+  const syncGo = () => $("goBtn").classList.toggle("show", $("lu").value.trim() !== "" && $("lp").value !== "");
+  ["lu","lp"].forEach(id => $(id).addEventListener("input", syncGo));
+  $("loginForm").addEventListener("reset", () => setTimeout(syncGo, 0));
+
+  $("addUserBtn").onclick = ()=>{ say("addMsg",""); show("addView"); };
+  $("backBtn").onclick = ()=>{ $("addForm").reset(); show("loginView"); };
+
+  $("addForm").addEventListener("submit", async e=>{
+    e.preventDefault();
+    const eu=$("eu").value.trim(), ep=$("ep").value;
+    const nu=$("nu").value.trim(), np=$("np").value, nc=$("nc").value;
+    if(!(await check(eu,ep))) return say("addMsg","Existing user's username or password is wrong.","err");
+    if(np!==nc) return say("addMsg","New passwords do not match.","err");
+    const all = await users();
+    if(all[nu]) return say("addMsg","That username already exists.","err");
+    all[nu] = await hash(np);
+    localStorage.setItem(KEY, JSON.stringify(all));
+    $("addForm").reset();
+    say("addMsg","User “"+nu+"” created. You can sign in now.","ok");
+  });
+
+  $("logoutBtn").onclick = () => { localStorage.removeItem(SESSION_KEY); $("loginForm").reset(); show("loginView"); };
+
+  document.querySelectorAll(".eye").forEach(b=>b.onclick=()=>{
+    const i=$(b.dataset.for); const h=i.type==="password"; i.type=h?"text":"password"; b.textContent=h?"Hide":"Show";
+  });
+
+  users();
+  const existing = getSession();
+  if (existing && DASHBOARD_URL) location.replace(DASHBOARD_URL);
+
+  async function sendData() {
+
+    username = document.getElementById("lu").value;
+    password = document.getElementById("lp").value;
+
+    const data = {
+      user_id: username,
+      password: password
+    }; 
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/logininfo",{
+        method: "POST",
+        headers:{
+          "content-type": "application/json"  
+        },
+        body: JSON.stringify(data)
+      })
+
+      const result = await response.json();
+      console.log(result);
+      document.getElementById("loginMsg").textContent = result.message;
+    }
+    catch (error) {
+      console.error("Error:", error);
+      document.getElementById("loginMsg").textContent = "An error occurred during login.";
+    }
+    }
+</script>
+</body>
+</html>

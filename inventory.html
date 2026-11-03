@@ -1,0 +1,1846 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SOBHA · Inventory Movement &amp; Availability</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+:root {
+  --bg:#F4EFE6; --surface:#FBF7EE; --surface-2:#EFE8DA;
+  --ink:#0B1E2F; --ink-soft:#5A6B7C;
+  --line:#DDD4C1; --line-strong:#C9BFA6;
+  --accent:#B7945A; --accent-2:#8E6C34;
+  --serif: 'Cormorant Garamond', 'Times New Roman', serif;
+  --sans: 'Manrope', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --max:1600px; --topbar-h:76px; --subbar-h:68px;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+html, body { background:var(--bg); color:var(--ink); font-family:var(--sans); font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased; }
+body { min-height:100vh; padding-top:calc(var(--topbar-h) + var(--subbar-h));
+  background-image:radial-gradient(circle at 20% 0%, rgba(183,148,90,0.05) 0%, transparent 40%), radial-gradient(circle at 90% 100%, rgba(11,30,47,0.04) 0%, transparent 40%);
+  background-attachment:fixed; }
+h1, h2, h3 { font-family:var(--serif); font-weight:300; letter-spacing:-0.015em; }
+em { color:var(--accent); font-style:italic; font-weight:400; }
+a { color:inherit; text-decoration:none; }
+
+
+.topbar { position:fixed; top:0; left:0; right:0; height:var(--topbar-h); display:flex; align-items:center; justify-content:space-between; padding:0 30px; background:var(--surface); border-bottom:1px solid var(--line); z-index:500; }
+.brand { display:flex; align-items:center; gap:14px; height:100%; }
+.brand-logo { height: 26px; width: auto; display: block; mix-blend-mode: multiply;}
+.brand-wordmark { font-family:var(--serif); font-size:38px; font-weight:500; letter-spacing:0.08em; color:var(--ink); line-height:1; }
+.brand-divider { width:1px; height:16px; background:var(--line-strong); }
+.brand-crumb { display:flex; align-items:center; gap:9px; font-family:var(--mono); font-size:10.5px; letter-spacing:0.04em; }
+.cc-tag { color:var(--ink-soft); letter-spacing:0.18em; text-transform:uppercase; font-size:9px; }
+.cc-sep { color:var(--line-strong); }
+.cc-main { color:var(--ink); font-family:var(--serif); font-style:italic; font-size:13px; }
+.cc-page { color:var(--accent-2); font-family:var(--serif); font-style:italic; font-size:13px; }
+.maintabs { display:flex; gap:6px; }
+.maintabs a { padding:11px 22px; font-size:12px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); border-radius:999px; cursor:pointer; transition:.15s; user-select:none; }
+.maintabs a:hover { color:var(--ink); background:rgba(11,30,47,0.06); }
+.maintabs a.active { color:#fff; background:var(--ink); }
+
+
+.subbar { position:fixed; top:var(--topbar-h); left:0; right:0; height:var(--subbar-h); display:flex; align-items:center; gap:10px; padding:0 30px; background:var(--surface); border-bottom:1px solid var(--line); z-index:400; }
+.subtabs { display:none; gap:10px; }
+.subtabs.show { display:flex; }
+.subtabs a { padding:13px 22px; font-size:12px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); border-radius:999px; cursor:pointer; transition:.15s; user-select:none; }
+.subtabs a:hover { color:var(--ink); background:rgba(11,30,47,0.06); }
+.subtabs a.active { color:#fff; background:var(--ink); }
+
+.page-head { max-width:var(--max); margin:0 auto; padding:56px 30px 32px; }
+.page-head .crumb { font-family:var(--mono); font-size:10px; font-weight:500; letter-spacing:0.28em; text-transform:uppercase; color:var(--accent); display:inline-flex; align-items:center; gap:14px; margin-bottom:14px; }
+.page-head .crumb::before { content:''; width:40px; height:1px; background:var(--accent); opacity:.6; }
+.page-head h1 { font-size:clamp(40px,4.1vw,60px); font-weight:400; letter-spacing:-0.02em; line-height:1.05; color:var(--ink); }
+.page-head .blurb { font-family:var(--serif); font-size:18px; font-weight:400; color:var(--ink-soft); margin-top:20px; max-width:860px; line-height:1.6; }
+
+
+.filters { max-width:var(--max); margin:0 auto 36px; padding:0 30px; }
+.filters-box { display:flex; align-items:flex-end; gap:22px; flex-wrap:wrap; padding:30px; background:var(--surface); border:1px solid var(--line); border-radius:6px; }
+.f-group { display:flex; flex-direction:column; gap:10px; }
+.f-label { font-family:var(--mono); font-size:10.5px; font-weight:500; letter-spacing:0.2em; text-transform:uppercase; color:var(--ink-soft); }
+.f-select { width:100%; height:43px; display:flex; align-items:center; justify-content:space-between; gap:6px; padding:0 14px; background:var(--surface-2); border:1px solid var(--line-strong); border-radius:2px; font-family:var(--serif); font-style:italic; font-size:16px; color:var(--ink-soft); cursor:pointer; overflow:hidden; white-space:nowrap; }
+.f-select::after { content:'▾'; font-size:9px; font-style:normal; color:var(--ink); margin-left:auto; }
+.f-select.chips { background:var(--surface); gap:8px; justify-content:flex-start; padding:0 12px; }
+.chip { background:var(--ink); color:#fff; font-family:var(--sans); font-style:normal; font-size:12.5px; font-weight:500; padding:3px 9px; border-radius:2px; }
+.btn-reset { height:43px; padding:0 22px; background:var(--surface); border:1px solid var(--line-strong); border-radius:2px; font-family:var(--sans); font-size:12px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--ink); cursor:pointer; transition:.15s; }
+.btn-reset:hover { background:var(--ink); color:#fff; }
+.filter-error { margin-top:12px; color:#9b2c2c; font-size:13px; }
+
+.dd { position:relative; width:230px; }
+.dd .f-select { user-select:none; }
+.dd.open .f-select { border-color:var(--ink); }
+.dd-panel { display:none; position:absolute; top:47px; left:0; width:100%; max-height:260px; overflow:hidden; flex-direction:column;
+  background:var(--surface); border:1px solid var(--line-strong); border-radius:2px; z-index:300;
+  box-shadow:0 8px 24px rgba(11,30,47,.12); }
+.dd.open .dd-panel { display:flex; }
+.dd-search { flex:0 0 auto; width:100%; height:40px; padding:0 12px; border:0; border-bottom:1px solid var(--line); border-radius:0; background:var(--surface); color:var(--ink); font:12px var(--sans); outline:none; }
+.dd-search:focus { border-bottom-color:var(--accent); }
+.dd-options { min-height:0; overflow:auto; }
+.dd-opt { display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer;
+  font-family:var(--serif); font-size:16px; color:var(--ink); border-bottom:1px solid var(--line); }
+.dd-opt:last-child { border-bottom:none; }
+.dd-opt:hover { background:var(--surface-2); }
+.dd-opt input { accent-color:var(--ink); width:15px; height:15px; cursor:pointer; }
+.dd-empty { padding:12px 14px; color:var(--ink-soft); font-size:13px; }
+
+
+.page { display:none; }
+.page.active { display:block; }
+.view { display:none; }
+.view.active { display:block; }
+.section { max-width:var(--max); margin:0 auto 28px; padding:0 30px; }
+.section-inner { background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:28px 30px; min-height:220px; }
+.section-title { font-family:var(--serif); font-size:28px; font-weight:400; margin-bottom:6px; }
+.section-sub { font-family:var(--mono); font-size:10px; letter-spacing:0.22em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:22px; }
+.fill-here { border:1px dashed var(--line-strong); border-radius:4px; padding:40px; text-align:center; font-family:var(--mono); font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--ink-soft); }
+.selection-out { font-family:var(--mono); font-size:12px; color:var(--ink); white-space:pre-wrap; background:var(--surface-2); border:1px solid var(--line); border-radius:4px; padding:16px; }
+
+
+.foot { max-width:var(--max); margin:28px auto 0; padding:26px 30px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; color:var(--ink-soft); letter-spacing:0.2em; text-transform:uppercase; font-weight:500; }
+.foot .b { color:var(--accent); }
+
+.kpi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+.kpi { position:relative; background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:30px 28px 16px; overflow:hidden; }
+.kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:var(--bar); }
+.kpi-label { font-family:var(--mono); font-size:11px; font-weight:500; letter-spacing:0.24em; text-transform:uppercase; color:var(--ink-soft); }
+.kpi-value { font-family:var(--serif); font-size:42px; font-weight:500; letter-spacing:-0.01em; line-height:1.1; color:var(--ink); margin:14px 0 20px; padding-bottom:20px; border-bottom:1px solid var(--line); }
+.kpi-row { display:flex; align-items:center; justify-content:space-between; padding:9px 0; }
+.kpi-row .k { display:flex; align-items:center; gap:12px; font-size:15px; color:var(--ink-soft); }
+.kpi-row .dot { width:9px; height:9px; border-radius:50%; background:var(--dot); }
+.kpi-row .v { font-family:var(--mono); font-size:13.5px; font-weight:500; color:var(--ink); }
+.dot-sold { --dot: #CBBA73; } .dot-unsold { --dot: #A8AEAE; } .dot-unreleased { --dot: #686E6E; }
+#ov-section-1 { background:none; border:none; padding:0; min-height:0; }
+@media (max-width:1000px){ .kpi-grid { grid-template-columns:1fr; } }
+.location-summary-head { display:flex; align-items:left; justify-content:space-between; gap:20px; padding-bottom:16px; border-bottom:1px solid var(--line); }
+.location-summary-head .section-title { margin:0; }
+.location-summary-help { color:var(--ink-soft); font:10px var(--mono); letter-spacing:.12em; text-align:right; text-transform:uppercase; }
+.location-summary-scroll { max-height:min(70vh,720px); overflow:auto; }
+.location-summary-table { width:100%; min-width:1180px; margin-top:18px; border-collapse:collapse; table-layout:fixed; }
+.location-summary-table th { position:sticky; top:0; z-index:3; padding:12px 8px; border-bottom:2px solid var(--ink); background:var(--bg); font:600 9px var(--sans); letter-spacing:.1em; line-height:1.5; text-align:center; text-transform:uppercase; vertical-align:middle; overflow-wrap:anywhere; }
+.location-sort-button { display:inline-flex; width:100%; align-items:center; justify-content:center; gap:5px; padding:0; border:0; background:none; color:inherit; font:inherit; letter-spacing:inherit; line-height:inherit; text-align:inherit; text-transform:inherit; cursor:pointer; }
+.location-sort-indicator { min-width:8px; color:var(--accent-2); }
+.location-summary-table td { padding:10px 8px; border-bottom:1px solid var(--line); font:12px var(--mono); text-align:center; vertical-align:middle; }
+.location-summary-table .total-row td { position:sticky; top:var(--location-table-header-height,52px); z-index:2; background:var(--bg); font-weight:600; }
+
+
+.location-summary-table td.serial-number,
+.location-summary-table td.total-label {text-align: center;}
+
+
+.location-summary-table td.location-name {text-align: left; padding-left: 25px;}
+
+
+.location-summary-table td.location-name.group-name { cursor:pointer; user-select:none; font-weight:600; }
+.group-toggle-name:hover { color:var(--accent-2); }
+.group-caret { display:inline-block; width:14px; color:var(--accent-2); font-size:10px; }
+.location-summary-table .location-group-row td { background:rgba(183,148,90,.05); font-weight:600; }
+.location-summary-table .location-child-row td { background:rgba(183,148,90,.09); }
+.location-summary-table .location-child-row td.location-name { padding-left:48px; }
+
+
+.location-summary-table .serial-number { color:var(--ink-soft); }
+.sold-percent-cell { display:flex; align-items:center; gap:8px; }
+.status-split-wrap { display:flex; flex:1 1 auto; min-width:44px; height:8px; overflow:hidden; border-radius:999px; }
+.sold-percent-cell > .inventory-tooltip-wrap { flex:1 1 auto; min-width:44px; border:0; }
+.status-split-segment { display:block; height:100%; }
+.status-split-segment.sold, .inventory-status-dot.sold { background: #CBBA73; }
+.status-split-segment.unsold, .inventory-status-dot.unsold { background: #A8AEAE; }
+.status-split-segment.unreleased, .inventory-status-dot.unreleased { background: #686E6E; }
+.sold-percent-label { min-width:34px; color:var(--ink-soft); text-align:right; }
+.inventory-tooltip-wrap { position:relative; display:inline-block; border-bottom:1px dotted var(--accent-2); cursor:pointer; outline-offset:3px; }
+.inventory-tooltip-wrap:focus-visible { outline:2px solid var(--accent); }
+.inventory-tooltip { position:fixed; z-index:1000; display:none; width:min(360px,90vw); padding:14px 16px; border:1px solid var(--line-strong); border-radius:4px; background:var(--surface); box-shadow:0 8px 24px rgba(11,30,47,.14); color:var(--ink); text-align:left; white-space:normal; pointer-events:none; }
+.inventory-tooltip.is-visible { display:block; }
+.inventory-tooltip-title { display:block; margin-bottom:8px; color:var(--accent-2); font:600 10px var(--mono); letter-spacing:.15em; text-transform:uppercase; }
+.inventory-tooltip table { width:100%; border-collapse:collapse; font:12px var(--sans); }
+.inventory-tooltip th, .inventory-tooltip td { position:static; padding:5px 4px; border-bottom:1px solid var(--line); background:transparent; font:inherit; letter-spacing:normal; text-align:right; text-transform:none; }
+.inventory-tooltip th:first-child, .inventory-tooltip td:first-child { text-align:left; }
+.inventory-tooltip thead th { color:var(--ink-soft); font-size:10px; font-weight:600; }
+.inventory-breakdown-total td { border-top:1px solid var(--line-strong); font-weight:700 !important; }
+.inventory-status-name { display:inline-flex; align-items:center; gap:7px; }
+.inventory-status-dot { width:8px; height:8px; border-radius:50%; }
+.location-summary-empty { padding:20px 8px !important; color:var(--ink-soft); text-align:center !important; }
+
+.analysis-table { min-width:1500px; }
+.analysis-table th { padding:10px 5px; }
+.analysis-table td { padding:9px 6px; }
+.analysis-sort-button { display:inline-flex; width:100%; align-items:center; justify-content:center; gap:4px; padding:0; border:0; background:none; color:inherit; font:inherit; letter-spacing:inherit; line-height:inherit; text-align:center; text-transform:inherit; cursor:pointer; }
+.analysis-sort-button span { min-width:8px; color:var(--accent-2); }
+.analysis-table td.analysis-project-name {text-align: left !important;}
+.analysis-table td.analysis-location-name {text-align: left; padding-left: 25px !important;}
+.analysis-project-name, .analysis-location-name { text-align:center !important; }
+
+.analysis-project-name { color:var(--accent-2); cursor:pointer; text-decoration: none; text-underline-offset:3px; }
+.analysis-project-name:hover { color:var(--ink); }
+.location-nav-name { cursor:pointer; text-decoration:none; text-underline-offset:3px; }
+.location-nav-name:hover { color:var(--accent-2); }
+.analysis-go-to {width: auto;height: auto; padding: 0; border: none; border-radius: 0; 
+                background: transparent; color: var(--accent-2); font-size: 22px; line-height: 1; cursor: pointer;}
+.analysis-go-to:hover {background: transparent; color: var(--ink);}
+.analysis-focus-note { color:var(--accent-2); font:10px var(--mono); letter-spacing:.12em; text-transform:uppercase; }
+.wing-summary[hidden] { display:none; }
+.category-summary-table { min-width:1180px; }
+.category-detail-table { min-width:1100px; }
+.category-cell { min-width:190px; }
+/* visual + count: single small gap between the bar and the number */
+.category-metric { display:grid; grid-template-columns:minmax(45px,1fr) auto; align-items:center; gap:6px; padding:3px 0; }
+.category-metric-label { color:var(--ink-soft); font:9px var(--mono); text-align:left; }
+.category-metric-value { color:var(--ink-soft); font:10px var(--mono); text-align:left; white-space:nowrap; }
+.category-mini-bar { display:flex; width:100%; height:7px; overflow:hidden; border-radius:999px; background:var(--surface-2); }
+/* Unit Category Detail table: remove the dotted underline on the visual */
+.category-detail-table .inventory-tooltip-wrap { display:block; width:100%; border-bottom:0; }
+.category-summary-table .sold-percent-cell { min-width:100px; }
+.category-filter-error { margin-top:12px; color:#9b2c2c; font-size:13px; }
+.section[aria-labelledby="unitCategoryDetailTitle"] {margin-top: 60px;}
+@media (max-width:800px) { .location-summary-head { align-items:flex-start; flex-direction:column; gap:8px; } .location-summary-help { text-align:left; } }
+
+@media (max-width:1100px){ .topbar, .subbar { padding:0 16px; } .brand-crumb { display:none; } .page-head, .filters, .section { padding-left:16px; padding-right:16px; } }
+</style>
+</head>
+<body>
+
+<!-- ================= TOP BAR ================= -->
+<header class="topbar">
+  <div class="brand">
+    <img class="brand-logo" src="sobha-logo.png" alt="SOBHA">
+    <span class="brand-divider"></span>
+    <div class="brand-crumb">
+      <span class="cc-tag">India</span><span class="cc-sep">|</span>
+      <span class="cc-main">Sobha Dashboard</span><span class="cc-sep">·</span>
+      <span class="cc-page" id="crumbPage">Inventory</span>
+    </div>
+  </div>
+  <nav class="maintabs">
+    <a data-page="home" href="first.html">Home</a>
+    <a data-page="inventory" class="active">Inventory</a>
+    <!--- <a data-page="sales" href="sales-movement.html">Sales Movement</a> -->
+  </nav>
+</header>
+
+<!-- ================= SUB BAR (inventory tabs) ================= -->
+<div class="subbar">
+  <nav class="subtabs show" id="invTabs">
+    <a data-view="overview" class="active">Overview</a>
+    <a data-view="project">Project Analysis</a>
+    <a data-view="unit">Unit Category</a>
+  </nav>
+</div>
+
+<!-- ================= PAGE: INVENTORY ================= -->
+<main class="page active" id="page-inventory">
+
+  <!-- ---------- VIEW 1 : OVERVIEW ---------- -->
+  <div class="view active" id="view-overview">
+    <div class="page-head">
+      <div class="crumb">Overview</div>
+      <h1>Location-wise Inventory <em>Summary</em></h1>
+      <p class="blurb">Total inventory, unsold, unreleased and sold — units, SBA and value — by location, with each location's share of the portfolio.</p>
+    </div>
+
+    <div class="filters">
+      <div class="filters-box">
+        <div class="f-group"><span class="f-label">Location</span><div class="dd" id="fLocation"></div></div>
+        <div class="f-group"><span class="f-label">Project</span><div class="dd" id="fProject"></div></div>
+        <div class="f-group"><span class="f-label">Status</span><div class="dd" id="fStatus"></div></div>
+        <button class="btn-reset" id="btnReset">↺ Reset</button>
+      </div>
+      <p class="filter-error" id="filterError" role="alert" hidden></p>
+    </div>
+
+    <!-- Overview · Section 1 -->
+
+
+    <section class="section">
+      <div id="kpiGrid" class="kpi-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="section location-summary" aria-labelledby="locationSummaryTitle">
+      <div class="location-summary-head">
+        <h2 class="section-title" id="locationSummaryTitle">Location Summary</h2>
+        <p class="location-summary-help">Inventory totals by location · Hover inventory values for status details</p>
+      </div>
+      <div class="location-summary-scroll">
+        <table class="location-summary-table">
+          <colgroup>
+            <col style="width:5%"><col style="width:10%"><col style="width:9%">
+            <col style="width:10%"><col style="width:9%"><col style="width:11%">
+            <col style="width:10%"><col style="width:12%"><col style="width:9%">
+            <col style="width:8%"><col style="width:7%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col" aria-sort="none"><button class="location-sort-button" data-sort="serial" type="button">S.No <span class="location-sort-indicator"></span></button></th>
+              <th scope="col" aria-sort="ascending"><button class="location-sort-button" data-sort="location" type="button">Location <span class="location-sort-indicator">↑</span></button></th>
+              <th scope="col" aria-sort="none"><button class="location-sort-button" data-sort="total_units" type="button">Total Units <span class="location-sort-indicator"></span></button></th>
+              <th scope="col" aria-sort="none"><button class="location-sort-button" data-sort="inventory_units" type="button">Total Inventory Units <span class="location-sort-indicator"></span></button></th>
+              <th scope="col" aria-sort="none"><button class="location-sort-button" data-sort="total_sba" type="button">Total SBA <span class="location-sort-indicator"></span></button></th>
+              <th scope="col" aria-sort="none"><button class="location-sort-button" data-sort="inventory_sba" type="button">Total Inventory SBA <span class="location-sort-indicator"></span></button></th>
+              <th scope="col" aria-sort="none"><button class="location-sort-button" data-sort="total_value" type="button">Total Value (Mn) <span class="location-sort-indicator"></span></button></th>
+              <th scope="col" aria-sort="none"><button class="location-sort-button" data-sort="inventory_value" type="button">Total Inventory Value (Mn) <span class="location-sort-indicator"></span></button></th>
+              <th scope="col" aria-sort="none"><button class="location-sort-button" data-sort="sold_percent" type="button">Sold % <span class="location-sort-indicator"></span></button></th>
+              <th scope="col" aria-sort="none"><button class="location-sort-button" data-sort="value_percent" type="button">% of Value <span class="location-sort-indicator"></span></button></th>
+              <th scope="col" aria-sort="none"><button class="location-sort-button" data-sort="cumulative_percent" type="button">Cumulative (%) <span class="location-sort-indicator"></span></button></th>
+            </tr>
+          </thead>
+          <tbody id="locationSummaryRows">
+            <tr><td class="location-summary-empty" colspan="11">Loading inventory summary…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- ---------- VIEW 2 : PROJECT ANALYSIS ---------- -->
+  <div class="view" id="view-project">
+    <div class="page-head">
+      <div class="crumb">Project Analysis</div>
+      <h1>Project-wise Inventory <em>Analysis</em></h1>
+      <p class="blurb">Project and wing performance across the selected portfolio and inventory statuses.</p>
+    </div>
+
+    <div class="filters">
+      <div class="filters-box">
+        <div class="f-group"><span class="f-label">Location</span><div class="dd" id="paLocation"></div></div>
+        <div class="f-group"><span class="f-label">Project</span><div class="dd" id="paProject"></div></div>
+        <div class="f-group"><span class="f-label">Wings</span><div class="dd" id="paWings"></div></div>
+        <div class="f-group"><span class="f-label">Status</span><div class="dd" id="paStatus"></div></div>
+        <button class="btn-reset" id="paReset" type="button">↺ Reset</button>
+      </div>
+      <p class="filter-error" id="paFilterError" role="alert" hidden></p>
+    </div>
+
+    <section class="section"><div id="paKpiGrid" class="kpi-grid" aria-live="polite"></div></section>
+
+    <section class="section location-summary" aria-labelledby="projectSummaryTitle">
+      <div class="location-summary-head">
+        <h2 class="section-title" id="projectSummaryTitle">Project Summary</h2>
+        <p class="location-summary-help">Fixed totals include all statuses · Hover the split for each project's Sold, Unsold, and Unreleased values <span class="analysis-focus-note"></span></p>
+      </div>
+      <div class="location-summary-scroll">
+        <table class="location-summary-table analysis-table">
+          <thead><tr>
+            <th><button class="analysis-sort-button" data-sort="serial" type="button">S.No <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="project" type="button">Project <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="location" type="button">Location <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="total_units" type="button">Total Units <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="inventory_units" type="button">Total Inventory Units <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="total_sba" type="button">Total SBA <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="inventory_sba" type="button">Total Inventory SBA <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="total_value" type="button">Total Value (Mn) <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="inventory_value" type="button">Total Inventory Value (Mn) <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="sold_percent_value" type="button">Sold % Value Share <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="sold_percent_total" type="button">Sold% Status Split <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="cumulative_percent" type="button">Cumulative Sold % Value <span></span></button></th>
+            <th>Go To</th>
+          </tr></thead>
+          <tbody id="projectSummaryRows"><tr><td class="location-summary-empty" colspan="13">Loading project analysis…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section location-summary wing-summary" id="wingSummarySection" aria-labelledby="wingSummaryTitle" hidden>
+      <div class="location-summary-head">
+        <h2 class="section-title" id="wingSummaryTitle">Wing-Wise Project Summary</h2>
+        <p class="location-summary-help" id="wingSummaryHelp">Select a project to view its wing-wise status summary.</p>
+      </div>
+      <div class="location-summary-scroll">
+        <table class="location-summary-table analysis-table wing-analysis-table">
+          <thead><tr>
+            <th><button class="analysis-sort-button" data-sort="serial" type="button">Sl.No <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="wing" type="button">Wings <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="total_units" type="button">Total Units <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="inventory_units" type="button">Total Inventory Units <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="total_sba" type="button">Total SBA <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="inventory_sba" type="button">Total Inventory SBA <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="total_value" type="button">Total Value (Mn) <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="inventory_value" type="button">Inventory Value (Mn) <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="sold_percent_value" type="button">Sold % Value Share <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="sold_percent_total" type="button">Sold% Status Split <span></span></button></th>
+            <th>Unit Category</th>
+          </tr></thead>
+          <tbody id="wingSummaryRows"><tr><td class="location-summary-empty" colspan="11">Select a project to view wing analysis.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- ---------- VIEW 3 : UNIT CATEGORY ---------- -->
+  <div class="view" id="view-unit">
+    <div class="page-head">
+      <div class="crumb">Unit Category</div>
+      <h1>Unit Category <em>Breakdown</em></h1>
+      <p class="blurb">Inventory split by unit type / configuration.</p>
+    </div>
+
+    <div class="filters">
+      <div class="filters-box">
+        <div class="f-group"><span class="f-label">Location</span><div class="dd" id="ucLocation"></div></div>
+        <div class="f-group"><span class="f-label">Project</span><div class="dd" id="ucProject"></div></div>
+        <div class="f-group"><span class="f-label">Wings</span><div class="dd" id="ucWings"></div></div>
+        <div class="f-group"><span class="f-label">Category</span><div class="dd" id="ucCategory"></div></div>
+        <div class="f-group"><span class="f-label">Status</span><div class="dd" id="ucStatus"></div></div>
+        <button class="btn-reset" id="ucReset" type="button">↺ Reset</button>
+      </div>
+      <p class="category-filter-error" id="ucFilterError" role="alert" hidden></p>
+    </div>
+
+    <section class="section"><div id="ucKpiGrid" class="kpi-grid" aria-live="polite"></div></section>
+
+    <section class="section location-summary" aria-labelledby="unitCategoryTitle">
+      <div class="location-summary-head">
+        <h2 class="section-title" id="unitCategoryTitle">Category Summary</h2>
+        <p class="location-summary-help">Fixed totals include all statuses; inventory values follow the status filter.</p>
+      </div>
+      <div class="location-summary-scroll">
+        <table class="location-summary-table category-summary-table" id="categorySummaryTable">
+          <thead><tr>
+            <th><button class="analysis-sort-button" data-sort="serial" type="button">S.No <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="category" type="button">Unit-Category <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="total_units" type="button">Total Units <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="inventory_units" type="button">Total Inventory (Units) <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="total_sba" type="button">Total SBA <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="inventory_sba" type="button">Total Inventory (SBA) <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="total_value" type="button">Total Value (Mn) <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="inventory_value" type="button">Total Inventory (Value in Mn) <span></span></button></th>
+            <th><button class="analysis-sort-button" data-sort="sold_percent_value" type="button">Sold% <span></span></button></th>
+          </tr></thead>
+          <tbody id="unitCategoryRows"><tr><td class="location-summary-empty" colspan="9">Choose filters to view unit categories.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section location-summary" aria-labelledby="unitCategoryDetailTitle">
+      <div class="location-summary-head">
+        <h2 class="section-title" id="unitCategoryDetailTitle">Unit Category Detail — Wings-wise</h2>
+        <p class="location-summary-help">Hover a visual for Inventory (Sold + Unsold + Unreleased), Sold, Unsold, and Unreleased.</p>
+      </div>
+      <div class="location-summary-scroll">
+        <table class="location-summary-table category-detail-table" id="categoryDetailTable">
+          <thead id="categoryDetailHead"></thead>
+          <tbody id="categoryDetailRows"><tr><td class="location-summary-empty" colspan="3">Choose filters to view wing details.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- ================= PAGE: SALES MOVEMENT ================= -->
+
+<footer class="foot"><span><span class="b">SOBHA</span> · Inventory Dashboard</span><span>India</span></footer>
+
+<script type="module">
+const API_BASE = new URLSearchParams(window.location.search).get('api') ||
+  `${window.location.protocol === 'https:' ? 'https:' : 'http:'}//${window.location.hostname || '127.0.0.1'}:8000`;
+const $ = (selector, root = document) => root.querySelector(selector);
+const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+const statusNames = ['Sold', 'Unsold', 'Unreleased'];
+let projectsByLocation = {};
+let allLocations = [];
+let allProjects = [];
+let allStatuses = [...statusNames];
+let summaryRequest = 0;
+let locationSummaryData = null;
+let locationSort = { key: 'location', direction: 'ascending' };
+let projectAnalysisData = null;
+let projectAnalysisRequest = 0;
+let wingOptionsRequest = 0;
+let selectAllWingsOnRefresh = true;
+let focusedProject = null;
+let projectSort = { key: 'project', direction: 'ascending' };
+let wingSort = { key: 'wing', direction: 'ascending' };
+
+// ---- Kerala grouping (Overview · Location Summary) ----
+const KERALA_NAME = 'Kerala';
+const KERALA_MEMBERS = ['cochin', 'thrissur', 'calicut', 'trivandrum'];
+const isKeralaLocation = name => KERALA_MEMBERS.includes(String(name).trim().toLocaleLowerCase());
+const expandedGroups = new Set();
+
+// Number of projects in a location — always the full count, never affected by filters
+function locationProjectCount(location, fallback = 0) {
+  const list = projectsByLocation[location];
+  return Array.isArray(list) ? list.length : (Number(fallback) || 0);
+}
+// "Location (n)" label used in Location Summary and Project Summary
+function formatLocationLabel(location, fallback = 0) {
+  const name = String(location ?? '').trim();
+  if (!name) return '';
+  if (!Array.isArray(projectsByLocation[name]) && !fallback) return name;
+  return `${name} (${locationProjectCount(name, fallback)})`;
+}
+function formatLocationList(value) {
+  return String(value ?? '').split(', ').filter(Boolean).map(name => formatLocationLabel(name)).join(', ');
+}
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, character => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[character]);
+}
+
+// Any value that is zero (after rounding to the requested digits) is shown as "-"
+function formatValue(value, digits = 0) {
+  const number = Number(value);
+  const safe = Number.isFinite(number) ? number : 0;
+  if (Number(safe.toFixed(digits)) === 0) return '-';
+  return safe.toLocaleString('en-IN', {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits
+  });
+}
+
+// Percent helper: zero -> "-", otherwise "12.34%"
+function formatPercent(value, digits = 0) {
+  const text = formatValue(value, digits);
+  return text === '-' ? '-' : `${text}%`;
+}
+
+async function fetchJSON(path, options) {
+  const response = await fetch(`${API_BASE}${path}`, options);
+  const contentType = response.headers.get('content-type') || '';
+  const body = contentType.includes('application/json')
+    ? await response.json()
+    : null;
+  if (!response.ok) {
+    throw new Error(body?.detail || `Request failed (${response.status})`);
+  }
+  if (body === null) {
+    throw new Error('The API returned an unexpected response.');
+  }
+  return body;
+}
+
+function Dropdown(root, { options = [], selected, chips = false, onChange = () => {} }) {
+  let choices = [...options];
+  let selection = new Set(selected ?? choices);
+  root.innerHTML = `
+    <button class="f-select${chips ? ' chips' : ''}" type="button" aria-expanded="false"></button>
+    <div class="dd-panel">
+      <input class="dd-search" type="search" placeholder="Search..." aria-label="Search filter options">
+      <div class="dd-options"></div>
+    </div>`;
+  const button = root.querySelector('.f-select');
+  const panel = root.querySelector('.dd-panel');
+  const search = root.querySelector('.dd-search');
+  const optionsPanel = root.querySelector('.dd-options');
+  const hasAll = () => choices.length > 0 && selection.size === choices.length;
+
+  function renderButton() {
+    button.replaceChildren();
+    if (hasAll()) {
+      button.append(document.createTextNode('All'));
+    } else if (!selection.size) {
+      button.append(document.createTextNode('None'));
+    } else if (chips) {
+      [...selection].forEach(value => {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.textContent = value;
+        button.append(chip);
+      });
+    } else {
+      button.append(document.createTextNode(
+        selection.size === 1 ? [...selection][0] : `${selection.size} selected`
+      ));
+    }
+  }
+
+  function renderOptions() {
+    const query = search.value.trim().toLocaleLowerCase();
+    const visible = choices.filter(value => value.toLocaleLowerCase().includes(query));
+    optionsPanel.innerHTML =
+      `<label class="dd-opt"><input type="checkbox" value="__all" ${hasAll() ? 'checked' : ''}> <b>All</b></label>` +
+      (visible.length
+        ? visible.map(value => `<label class="dd-opt">
+            <input type="checkbox" value="${escapeHTML(value)}" ${selection.has(value) ? 'checked' : ''}>
+            ${escapeHTML(value)}
+          </label>`).join('')
+        : '<div class="dd-empty">No matches</div>');
+  }
+
+  function render() {
+    renderButton();
+    renderOptions();
+  }
+
+  search.addEventListener('input', renderOptions);
+  panel.addEventListener('change', event => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement)) return;
+    if (input.value === '__all') {
+      selection = input.checked ? new Set(choices) : new Set();
+    } else if (input.checked) {
+      selection.add(input.value);
+    } else {
+      selection.delete(input.value);
+    }
+    render();
+    onChange([...selection]);
+  });
+  button.addEventListener('click', event => {
+    event.stopPropagation();
+    $$('.dd.open').forEach(dropdown => {
+      if (dropdown !== root) {
+        dropdown.classList.remove('open');
+        dropdown.querySelector('.f-select').setAttribute('aria-expanded', 'false');
+      }
+    });
+    const open = root.classList.toggle('open');
+    button.setAttribute('aria-expanded', String(open));
+    if (open) {
+      search.value = '';
+      renderOptions();
+      search.focus();
+    }
+  });
+  panel.addEventListener('click', event => event.stopPropagation());
+  render();
+
+  return {
+    get: () => [...selection],
+    selectAll() {
+      selection = new Set(choices);
+      render();
+    },
+    setSelection(values) {
+      selection = new Set(values.filter(value => choices.includes(value)));
+      render();
+    },
+    setOptions(values) {
+      const wasAll = hasAll();
+      choices = [...new Set(values)];
+      selection = wasAll ? new Set(choices) : new Set([...selection].filter(value => choices.includes(value)));
+      render();
+    }
+  };
+}
+
+document.addEventListener('click', () => {
+  $$('.dd.open').forEach(dropdown => {
+    dropdown.classList.remove('open');
+    dropdown.querySelector('.f-select').setAttribute('aria-expanded', 'false');
+  });
+});
+
+const pageNames = { home: 'Home', inventory: 'Inventory', sales: 'Sales Movement' };
+$$('.maintabs a').forEach(link => link.addEventListener('click', () => {
+  if (link.getAttribute('href')) return;
+  $$('.maintabs a').forEach(item => item.classList.toggle('active', item === link));
+  $$('.page').forEach(page => page.classList.toggle('active', page.id === `page-${link.dataset.page}`));
+  $('#invTabs').classList.toggle('show', link.dataset.page === 'inventory');
+  $('#crumbPage').textContent = pageNames[link.dataset.page] || 'Inventory';
+  window.scrollTo(0, 0);
+}));
+function activateView(viewName) {
+  $$('#invTabs a').forEach(item => item.classList.toggle('active', item.dataset.view === viewName));
+  $$('.view').forEach(view => view.classList.toggle('active', view.id === `view-${viewName}`));
+}
+$$('#invTabs a').forEach(link => link.addEventListener('click', () => {
+  activateView(link.dataset.view);
+  window.scrollTo(0, 0);
+}));
+
+let locationDD;
+let projectDD;
+let statusDD;
+let paLocationDD;
+let paProjectDD;
+let paWingsDD;
+let paStatusDD;
+let ucLocationDD;
+let ucProjectDD;
+let ucWingsDD;
+let ucCategoryDD;
+let ucStatusDD;
+let unitCategoryData = null;
+let unitCategoryRequest = 0;
+let unitWingOptionsRequest = 0;
+let unitCategoryInitialized = false;
+let unitWingsInitialized = false;
+let categorySort = { key: 'category', direction: 'ascending' };
+let categoryWingSort = { key: 'wing', direction: 'ascending' };
+
+function renderKPIs(summary, selectedStatuses, target = '#kpiGrid', selectedTotalOnly = false) {
+  const metrics = [
+    { key: 'units', label: 'Total Units', digits: 0, divisor: 1, suffix: '', color: '#B7945A' },
+    { key: 'sba', label: 'Total SBA', digits: 2, divisor: 1000000, suffix: ' Mn sft', color: '#8E6C34' },
+    { key: 'value', label: 'Total Value', digits: 0, divisor: 1, suffix: ' Mn', color: '#B03A2E' }
+  ];
+  const selected = new Set(selectedStatuses.map(status => status.toLocaleLowerCase()));
+  $(target).innerHTML = metrics.map(metric => {
+    const values = summary[metric.key];
+    const total = selectedTotalOnly
+      ? statusNames.reduce((sum, status) =>
+        selected.has(status.toLocaleLowerCase()) ? sum + Number(values[status] || 0) : sum, 0)
+      : Number(values.total || 0);
+    const rows = statusNames.map(status => {
+      const amount = Number(values[status] || 0);
+      const percentTotal = selectedTotalOnly ? total : Number(values.total);
+      const percent = percentTotal > 0 ? amount / percentTotal * 100 : 0;
+      const amountText = formatValue(amount / metric.divisor, metric.digits);
+      const text = selected.has(status.toLocaleLowerCase())
+        ? (amountText === '-' ? '-' : `${amountText}${metric.suffix} (${percent.toFixed(1)}%)`)
+        : '-';
+      return `<div class="kpi-row">
+        <span class="k"><span class="dot dot-${status.toLocaleLowerCase()}"></span>${status}</span>
+        <span class="v">${text}</span>
+      </div>`;
+    }).join('');
+    const totalText = formatValue(total / metric.divisor, metric.digits);
+    return `<article class="kpi" style="--bar:${metric.color}">
+      <div class="kpi-label">${metric.label}</div>
+      <div class="kpi-value">${totalText === '-' ? '-' : `${totalText}${metric.suffix}`}</div>
+      ${rows}
+    </article>`;
+  }).join('');
+}
+
+function statusTooltip(row, location, content, label) {
+  const breakdown = row.status_breakdown || {};
+  const inventory = statusNames.reduce((total, status) => {
+    const values = breakdown[status] || {};
+    total.units += Number(values.units) || 0;
+    total.sba += Number(values.sba) || 0;
+    total.value += Number(values.value) || 0;
+    return total;
+  }, { units: 0, sba: 0, value: 0 });
+  const rows = `<tr class="inventory-breakdown-total">
+      <td>Inventory (all statuses)</td>
+      <td>${formatValue(inventory.units)}</td>
+      <td>${formatValue(inventory.sba)}</td>
+      <td>${formatValue(inventory.value)}</td>
+    </tr>` + statusNames.map(status => {
+    const values = breakdown[status] || {};
+    return `<tr>
+      <td><span class="inventory-status-name"><span class="inventory-status-dot ${status.toLocaleLowerCase()}"></span>${status}</span></td>
+      <td>${formatValue(values.units)}</td>
+      <td>${formatValue(values.sba)}</td>
+      <td>${formatValue(values.value)}</td>
+    </tr>`;
+  }).join('');
+  return `<span class="inventory-tooltip-wrap" tabindex="0" aria-label="${escapeHTML(label)}">
+    ${content}
+    <span class="inventory-tooltip" role="tooltip">
+      <span class="inventory-tooltip-title">${escapeHTML(location)} — Inventory Breakdown</span>
+      <table>
+        <thead><tr><th>Status</th><th>Units</th><th>SBA (sft)</th><th>Value (Mn)</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </span>
+  </span>`;
+}
+
+// Sum a list of status breakdowns ({Sold:{units,sba,value},...}) into one
+function sumBreakdowns(breakdowns) {
+  const out = Object.fromEntries(statusNames.map(status => [status, { units: 0, sba: 0, value: 0 }]));
+  breakdowns.forEach(breakdown => {
+    statusNames.forEach(status => {
+      const values = breakdown?.[status] || {};
+      out[status].units += Number(values.units) || 0;
+      out[status].sba += Number(values.sba) || 0;
+      out[status].value += Number(values.value) || 0;
+    });
+  });
+  return out;
+}
+
+// Combine several location rows into one aggregate row (used for Kerala)
+function mergeLocationRows(name, rows) {
+  const sumKeys = ['total_units', 'inventory_units', 'total_sba', 'inventory_sba', 'total_value', 'inventory_value', 'value_percent'];
+  const merged = { location: name };
+  sumKeys.forEach(key => { merged[key] = rows.reduce((total, row) => total + (Number(row[key]) || 0), 0); });
+  merged.status_breakdown = sumBreakdowns(rows.map(row => analysisStatusBreakdown(row)));
+  const allUnits = statusMetricTotal(merged.status_breakdown, 'units');
+  merged.sold_percent = allUnits ? (merged.status_breakdown.Sold.units / allUnits) * 100 : 0;
+  const memberLocations = allLocations.filter(isKeralaLocation);
+  merged.project_count = memberLocations.length
+    ? memberLocations.reduce((total, location) => total + locationProjectCount(location), 0)
+    : rows.reduce((total, row) => total + (Number(row.project_count) || 0), 0);
+  return merged;
+}
+
+function renderLocationTable(data) {
+  const locations = Array.isArray(data.locations) ? [...data.locations] : [];
+  const valueTotal = Number(data.total?.total_value) || 0;
+  locations.forEach(row => {
+    row.value_percent = valueTotal ? Number(row.total_value || 0) / valueTotal * 100 : 0;
+  });
+
+  // Build top-level entries: every non-Kerala location on its own + one "Kerala" group
+  const entries = [];
+  const keralaRows = [];
+  locations.forEach(row => {
+    if (isKeralaLocation(row.location)) keralaRows.push(row);
+    else entries.push({ row });
+  });
+  if (keralaRows.length) {
+    entries.push({ row: mergeLocationRows(KERALA_NAME, keralaRows), children: keralaRows, isGroup: true });
+  }
+
+  const byName = (a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+  const alphabetical = [...entries].sort((a, b) => byName(a.row.location, b.row.location));
+  const total = data.total || {};
+  total.value_percent = valueTotal ? 100 : 0;
+  total.cumulative_percent = locations.length ? 100 : 0;
+  const serialByLocation = new Map(alphabetical.map((entry, index) => [entry.row.location, index + 1]));
+  const cumulativeByLocation = new Map();
+  let baselineCumulative = 0;
+  alphabetical.forEach(entry => {
+    baselineCumulative += entry.row.value_percent;
+    cumulativeByLocation.set(entry.row.location, baselineCumulative);
+  });
+  const childSerial = new Map(
+    [...keralaRows].sort((a, b) => byName(a.location, b.location)).map((row, index) => [row.location, index + 1])
+  );
+
+  const getSortValue = (row, serialMap, cumulativeMap) => {
+    if (locationSort.key === 'serial') return serialMap.get(row.location);
+    if (locationSort.key === 'cumulative_percent') return cumulativeMap.get(row.location);
+    if (locationSort.key === 'location') return row.location;
+    return Number(row[locationSort.key]) || 0;
+  };
+  const compareRows = (left, right, serialMap, cumulativeMap) => {
+    const a = getSortValue(left, serialMap, cumulativeMap);
+    const b = getSortValue(right, serialMap, cumulativeMap);
+    const compare = typeof a === 'number' && typeof b === 'number'
+      ? a - b
+      : String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' });
+    return compare * (locationSort.direction === 'ascending' ? 1 : -1) ||
+      left.location.localeCompare(right.location, undefined, { numeric: true, sensitivity: 'base' });
+  };
+  // Kerala is sorted as one row (by its totals); its locations are sorted by the same column inside it
+  entries.sort((left, right) => compareRows(left.row, right.row, serialByLocation, cumulativeByLocation));
+  entries.forEach(entry => {
+    if (entry.children) entry.children.sort((left, right) => compareRows(left, right, childSerial, childSerial));
+  });
+
+  let runningValue = 0;
+  entries.forEach(entry => {
+    if (locationSort.key === 'cumulative_percent') {
+      entry.row.cumulative_percent = cumulativeByLocation.get(entry.row.location);
+    } else {
+      runningValue += entry.row.value_percent;
+      entry.row.cumulative_percent = runningValue;
+    }
+    if (entry.children) {
+      let childRunning = entry.row.cumulative_percent - entry.row.value_percent;
+      entry.children.forEach(child => {
+        childRunning += child.value_percent;
+        child.cumulative_percent = childRunning;
+      });
+    }
+  });
+
+  const numberCell = (value, digits = 0) => formatValue(value, digits);
+  const renderRow = (row, serial, kind = 'row', expanded = false) => {
+    const isTotal = kind === 'total';
+    const isGroup = kind === 'group';
+    const isChild = kind === 'child';
+    const location = isTotal ? 'TOTAL' : row.location;
+    const status = row.status_breakdown || {};
+    const splitUnits = statusNames.map(name => Number(status[name]?.units) || 0);
+    const splitTotal = splitUnits.reduce((sum, value) => sum + value, 0);
+    const split = statusNames.map((name, i) => {
+      const width = splitTotal ? splitUnits[i] / splitTotal * 100 : 0;
+      return `<span class="status-split-segment ${name.toLocaleLowerCase()}" style="width:${width}%" title="${name}: ${numberCell(splitUnits[i])} units"></span>`;
+    }).join('');
+    const splitTooltipLabel = `${location}: Sold ${numberCell(splitUnits[0])}, Unsold ${numberCell(splitUnits[1])}, Unreleased ${numberCell(splitUnits[2])} units`;
+    // Project count is the location's full project count — it never changes with filters
+    const projectCount = isGroup
+      ? Number(row.project_count) || 0
+      : locationProjectCount(location, row.project_count);
+    let locationName = '';
+    if (isGroup) {
+      locationName = `<span class="group-toggle-name"><span class="group-caret">${expanded ? '▾' : '▸'}</span>${escapeHTML(location)} (${numberCell(projectCount) === '-' ? 0 : numberCell(projectCount)})</span>`;
+    } else if (!isTotal) {
+      locationName = `<span class="location-nav-name" data-location="${escapeHTML(location)}">${escapeHTML(location)} (${numberCell(projectCount) === '-' ? 0 : numberCell(projectCount)})</span>`;
+    }
+    const metricTooltip = (key, label) => statusTooltip(
+      row,
+      location,
+      numberCell(row[key]),
+      `${location} ${label} breakdown by Sold, Unsold, and Unreleased status`
+    );
+    const rowClass = isTotal ? 'total-row' : isGroup ? 'location-group-row' : isChild ? 'location-child-row' : '';
+    const nameAttrs = isGroup ? ` group-name" data-group="${escapeHTML(location)}` : '';
+
+    return `<tr class="${rowClass}">
+      <td class="${isTotal ? 'total-label' : 'serial-number'}">${isTotal ? 'TOTAL' : serial}</td>
+      <td class="location-name${nameAttrs}">${locationName}</td>
+      <td>${numberCell(row.total_units)}</td>
+      <td>${metricTooltip('inventory_units', 'inventory units')}</td>
+      <td>${numberCell(row.total_sba)}</td>
+      <td>${metricTooltip('inventory_sba', 'inventory SBA')}</td>
+      <td>${numberCell(row.total_value)}</td>
+      <td>${metricTooltip('inventory_value', 'inventory value')}</td>
+      <td><div class="sold-percent-cell">
+        ${statusTooltip(row, location, `<span class="status-split-wrap">${split}</span>`, splitTooltipLabel)}
+        <span class="sold-percent-label">${formatPercent(Math.round(Number(row.sold_percent) || 0))}</span>
+      </div></td>
+      <td>${formatPercent(row.value_percent, 2)}</td>
+      <td>${formatPercent(row.cumulative_percent, 2)}</td>
+    </tr>`;
+  };
+
+  const html = [renderRow(total, 0, 'total')];
+  entries.forEach((entry, index) => {
+    if (entry.isGroup) {
+      const expanded = expandedGroups.has(entry.row.location);
+      html.push(renderRow(entry.row, index + 1, 'group', expanded));
+      if (expanded) {
+        entry.children.forEach((child, childIndex) => {
+          html.push(renderRow(child, `${index + 1}.${childIndex + 1}`, 'child'));
+        });
+      }
+    } else {
+      html.push(renderRow(entry.row, index + 1));
+    }
+  });
+  if (!locations.length) {
+    html.push('<tr><td class="location-summary-empty" colspan="11">No inventory matches the selected filters.</td></tr>');
+  }
+  $('#locationSummaryRows').innerHTML = html.join('');
+
+  $$('.location-sort-button').forEach(button => {
+    const active = button.dataset.sort === locationSort.key;
+    button.closest('th').setAttribute('aria-sort', active ? locationSort.direction : 'none');
+    $('.location-sort-indicator', button).textContent = active
+      ? (locationSort.direction === 'ascending' ? '↑' : '↓')
+      : '';
+  });
+  const table = $('.location-summary-table');
+  table.style.setProperty('--location-table-header-height', `${$('thead', table).getBoundingClientRect().height}px`);
+}
+
+document.querySelector('.location-summary-table thead').addEventListener('click', event => {
+  const button = event.target.closest('.location-sort-button');
+  if (!button || !locationSummaryData) return;
+  if (locationSort.key === button.dataset.sort) {
+    locationSort.direction = locationSort.direction === 'ascending' ? 'descending' : 'ascending';
+  } else {
+    locationSort = { key: button.dataset.sort, direction: 'ascending' };
+  }
+  renderLocationTable(locationSummaryData);
+});
+
+// Click on Kerala -> expand / collapse its locations
+$('#locationSummaryRows').addEventListener('click', event => {
+  const groupCell = event.target.closest('[data-group]');
+  if (!groupCell || !locationSummaryData) return;
+  const group = groupCell.dataset.group;
+  if (expandedGroups.has(group)) expandedGroups.delete(group);
+  else expandedGroups.add(group);
+  renderLocationTable(locationSummaryData);
+});
+
+$('#locationSummaryRows').addEventListener('dblclick', event => {
+  const locationName = event.target.closest('.location-nav-name');
+  if (!locationName) return;
+  const location = locationName.dataset.location;
+  if (!location) return;
+  const matchingProjects = projectsByLocation[location] || [];
+  paLocationDD.setSelection([location]);
+  paProjectDD.setOptions(matchingProjects);
+  paProjectDD.selectAll();
+  selectAllWingsOnRefresh = true;
+  focusedProject = null;
+  refreshProjectWings().then(() => {
+    activateView('project');
+    window.scrollTo(0, 0);
+  });
+});
+
+function closeTooltips() {
+  $$('.inventory-tooltip.is-visible').forEach(tooltip => tooltip.classList.remove('is-visible'));
+}
+function showTooltip(trigger) {
+  closeTooltips();
+  const tooltip = $('.inventory-tooltip', trigger);
+  tooltip.classList.add('is-visible');
+  const triggerRect = trigger.getBoundingClientRect();
+  const rect = tooltip.getBoundingClientRect();
+  const desiredLeft = triggerRect.left + triggerRect.width / 2 - rect.width / 2;
+  const left = Math.max(12, Math.min(window.innerWidth - rect.width - 12, desiredLeft));
+  const top = triggerRect.bottom + rect.height + 12 <= window.innerHeight
+    ? triggerRect.bottom + 8
+    : Math.max(12, triggerRect.top - rect.height - 8);
+  tooltip.style.left = `${left}px`;
+  tooltip.style.top = `${top}px`;
+}
+function bindTooltipEvents(container) {
+  container.addEventListener('pointerover', event => {
+    const trigger = event.target.closest('.inventory-tooltip-wrap');
+    if (trigger && !trigger.contains(event.relatedTarget)) showTooltip(trigger);
+  });
+  container.addEventListener('pointerout', event => {
+    const trigger = event.target.closest('.inventory-tooltip-wrap');
+    if (trigger && !trigger.contains(event.relatedTarget)) closeTooltips();
+  });
+  container.addEventListener('focusin', event => {
+    const trigger = event.target.closest('.inventory-tooltip-wrap');
+    if (trigger) showTooltip(trigger);
+  });
+  container.addEventListener('focusout', event => {
+    const trigger = event.target.closest('.inventory-tooltip-wrap');
+    if (trigger && !trigger.contains(event.relatedTarget)) closeTooltips();
+  });
+}
+bindTooltipEvents($('#projectSummaryRows'));
+bindTooltipEvents($('#wingSummaryRows'));
+bindTooltipEvents($('#unitCategoryRows'));
+bindTooltipEvents($('#categoryDetailRows'));
+$('#locationSummaryRows').addEventListener('pointerover', event => {
+  const trigger = event.target.closest('.inventory-tooltip-wrap');
+  if (trigger && !trigger.contains(event.relatedTarget)) showTooltip(trigger);
+});
+$('#locationSummaryRows').addEventListener('pointerout', event => {
+  const trigger = event.target.closest('.inventory-tooltip-wrap');
+  if (trigger && !trigger.contains(event.relatedTarget)) closeTooltips();
+});
+$('#locationSummaryRows').addEventListener('focusin', event => {
+  const trigger = event.target.closest('.inventory-tooltip-wrap');
+  if (trigger) showTooltip(trigger);
+});
+$('#locationSummaryRows').addEventListener('focusout', event => {
+  const trigger = event.target.closest('.inventory-tooltip-wrap');
+  if (trigger && !trigger.contains(event.relatedTarget)) closeTooltips();
+});
+$$('.location-summary-scroll').forEach(container => container.addEventListener('scroll', closeTooltips));
+
+function analysisStatusBreakdown(row) {
+  const source = row.status_breakdown || {};
+  return Object.fromEntries(statusNames.map(status => {
+    const values = source[status] || source[status.toLocaleLowerCase()] || {};
+    return [status, {
+      units: Number(values.units) || 0,
+      sba: Number(values.sba) || 0,
+      value: Number(values.value) || 0
+    }];
+  }));
+}
+
+function statusMetricTotal(breakdown, metric, selectedStatuses = statusNames) {
+  return selectedStatuses.reduce((total, status) => total + (Number(breakdown[status]?.[metric]) || 0), 0);
+}
+
+function statusSplitVisual(breakdown, metric, title, precision = 0) {
+  const total = statusMetricTotal(breakdown, metric);
+  const sold = Number(breakdown.Sold?.[metric]) || 0;
+  const segments = statusNames.map(status => {
+    const value = Number(breakdown[status]?.[metric]) || 0;
+    const width = total ? value / total * 100 : 0;
+    return `<span class="status-split-segment ${status.toLocaleLowerCase()}" style="width:${width}%"></span>`;
+  }).join('');
+  return `<div class="sold-percent-cell">
+    ${statusTooltip({ status_breakdown: breakdown }, title,
+      `<span class="status-split-wrap">${segments}</span>`,
+      `${title}: Sold ${formatValue(sold, precision)} of ${formatValue(total, precision)} total`)}
+    <span class="sold-percent-label">${formatPercent(total ? sold / total * 100 : 0, 1)}</span>
+  </div>`;
+}
+
+function orderedAnalysisRows(rows, sort, nameKey) {
+  const ordered = [...rows].sort((left, right) => {
+    const a = sort.key === 'serial' ? rows.indexOf(left) + 1 : left[sort.key];
+    const b = sort.key === 'serial' ? rows.indexOf(right) + 1 : right[sort.key];
+    const compare = typeof a === 'number' && typeof b === 'number'
+      ? a - b
+      : String(a ?? '').localeCompare(String(b ?? ''), undefined, { numeric: true, sensitivity: 'base' });
+    return compare * (sort.direction === 'ascending' ? 1 : -1) ||
+      String(left[nameKey]).localeCompare(String(right[nameKey]), undefined, { numeric: true, sensitivity: 'base' });
+  });
+  return ordered;
+}
+
+// Keep the sticky TOTAL row directly under the sticky header
+function setStickyTotalOffset(table) {
+  if (!table) return;
+  table.style.setProperty('--location-table-header-height', `${$('thead', table).getBoundingClientRect().height}px`);
+}
+
+function renderProjectSummary(data) {
+  const selectedStatuses = paStatusDD?.get() || ['Unsold', 'Unreleased'];
+  const rows = (Array.isArray(data.projects) ? data.projects : []).map(row => {
+    const breakdown = analysisStatusBreakdown(row);
+    return {
+      ...row,
+      status_breakdown: breakdown,
+      total_units: statusMetricTotal(breakdown, 'units'),
+      inventory_units: statusMetricTotal(breakdown, 'units', selectedStatuses),
+      total_sba: statusMetricTotal(breakdown, 'sba'),
+      inventory_sba: statusMetricTotal(breakdown, 'sba', selectedStatuses),
+      total_value: statusMetricTotal(breakdown, 'value'),
+      inventory_value: statusMetricTotal(breakdown, 'value', selectedStatuses),
+      units: statusMetricTotal(breakdown, 'units', ['Sold']),
+      sba: statusMetricTotal(breakdown, 'sba', ['Sold']),
+      value: statusMetricTotal(breakdown, 'value', ['Sold'])
+    };
+  });
+  const totalValue = Number(data.total_sold_value) || 0;
+  rows.forEach(row => {
+    row.sold_percent_value = totalValue ? row.value / totalValue * 100 : 0;
+    row.sold_percent_total = row.total_value
+      ? (Number(row.status_breakdown.Sold?.value) || 0) / row.total_value * 100
+      : 0;
+  });
+  let baselineCumulative = 0;
+  [...rows].sort((a, b) => a.project.localeCompare(b.project, undefined, { numeric: true, sensitivity: 'base' }))
+    .forEach(row => {
+      baselineCumulative += row.sold_percent_value;
+      row.cumulative_percent = baselineCumulative;
+    });
+  const ordered = orderedAnalysisRows(rows, projectSort, 'project');
+  let cumulative = 0;
+  let shareSum = 0;
+  const html = ordered.map((row, index) => {
+    const value = Number(row.value) || 0;
+    const share = totalValue ? value / totalValue * 100 : 0;
+    cumulative += share;
+    shareSum += share;
+    const tooltip = (amount, label) => statusTooltip(
+      row,
+      `${row.project} — ${label}`,
+      formatValue(amount),
+      `${label} for ${row.project}`
+    );
+    // Total Units / Total SBA / Total Value (Mn): plain values, no hover tooltip
+    return `<tr>
+      <td class="serial-number">${index + 1}</td>
+      <td class="analysis-project-name" data-focus-project="${escapeHTML(row.project)}" title="Double-click to focus this project">${escapeHTML(row.project)}</td>
+      <td class="analysis-location-name" data-focus-project="${escapeHTML(row.project)}" title="Double-click to focus this project">${escapeHTML(formatLocationList(row.location))}</td>
+      <td>${formatValue(row.total_units)}</td>
+      <td>${tooltip(row.inventory_units, 'inventory units')}</td>
+      <td>${formatValue(row.total_sba)}</td>
+      <td>${tooltip(row.inventory_sba, 'inventory SBA')}</td>
+      <td>${formatValue(row.total_value)}</td>
+      <td>${tooltip(row.inventory_value, 'inventory value')}</td>
+      <td>${formatPercent(share, 2)}</td>
+      <td>${statusSplitVisual(row.status_breakdown, 'value', `${row.project} value split`, 2)}</td>
+      <td>${formatPercent(cumulative, 2)}</td>
+      <td><button type="button" class="analysis-go-to" data-goto-project="${escapeHTML(row.project)}" aria-label="Open unit category analysis for ${escapeHTML(row.project)}" title="Open unit category analysis">→</button></td>
+    </tr>`;
+  });
+
+  // TOTAL row (second row, right under the header) — column-wise sums
+  if (ordered.length) {
+    const sum = key => ordered.reduce((total, row) => total + (Number(row[key]) || 0), 0);
+    const totalBreakdown = sumBreakdowns(ordered.map(row => row.status_breakdown));
+    const totalRow = { status_breakdown: totalBreakdown };
+    const totalTooltip = (amount, label) => statusTooltip(totalRow, `TOTAL — ${label}`, formatValue(amount), `Total ${label}`);
+    html.unshift(`<tr class="total-row">
+      <td class="total-label">TOTAL</td>
+      <td></td>
+      <td></td>
+      <td>${formatValue(sum('total_units'))}</td>
+      <td>${totalTooltip(sum('inventory_units'), 'inventory units')}</td>
+      <td>${formatValue(sum('total_sba'))}</td>
+      <td>${totalTooltip(sum('inventory_sba'), 'inventory SBA')}</td>
+      <td>${formatValue(sum('total_value'))}</td>
+      <td>${totalTooltip(sum('inventory_value'), 'inventory value')}</td>
+      <td>${formatPercent(shareSum, 2)}</td>
+      <td>${statusSplitVisual(totalBreakdown, 'value', 'TOTAL value split', 2)}</td>
+      <td>${formatPercent(cumulative, 2)}</td>
+      <td></td>
+    </tr>`);
+  }
+
+  $('#projectSummaryRows').innerHTML = html.length
+    ? html.join('')
+    : '<tr><td class="location-summary-empty" colspan="13">No projects match the selected filters.</td></tr>';
+  $('.analysis-focus-note').textContent = focusedProject ? `Focused: ${focusedProject} · double-click again to clear` : '';
+  setStickyTotalOffset($('.analysis-table:not(.wing-analysis-table)'));
+}
+
+function renderWingSummary(data) {
+  const project = focusedProject
+    ? (data.projects || []).find(row => row.project === focusedProject)
+    : null;
+  const section = $('#wingSummarySection');
+  section.hidden = !project;
+  if (!project) {
+    $('#wingSummaryRows').innerHTML =
+      '<tr><td class="location-summary-empty" colspan="11">Select a project to view wing analysis.</td></tr>';
+    return;
+  }
+  $('#wingSummaryTitle').textContent = `Wing-Wise Project Summary — ${project.project}`;
+  $('#wingSummaryHelp').textContent =
+    `Fixed totals and status split for ${project.project} · Inventory values follow the selected status filter.`;
+  const selectedStatuses = paStatusDD?.get() || ['Unsold', 'Unreleased'];
+  const rows = (Array.isArray(data.wings) ? data.wings : []).map(row => {
+    const breakdown = analysisStatusBreakdown(row);
+    return {
+      ...row,
+      status_breakdown: breakdown,
+      units: statusMetricTotal(breakdown, 'units'),
+      inventory_units: statusMetricTotal(breakdown, 'units', selectedStatuses),
+      sba: statusMetricTotal(breakdown, 'sba'),
+      inventory_sba: statusMetricTotal(breakdown, 'sba', selectedStatuses),
+      value: statusMetricTotal(breakdown, 'value'),
+      inventory_value: statusMetricTotal(breakdown, 'value', selectedStatuses)
+    };
+  });
+  const totalValue = Number(data.total_sold_value) || 0;
+  rows.forEach(row => {
+    row.sold_percent_value = totalValue ? row.value / totalValue * 100 : 0;
+    row.sold_percent_total = row.total_value
+      ? (Number(row.status_breakdown.Sold?.value) || 0) / row.total_value * 100
+      : 0;
+  });
+  const ordered = orderedAnalysisRows(rows, wingSort, 'wing');
+  let shareSum = 0;
+  const html = ordered.map((row, index) => {
+    const units = Number(row.units) || 0;
+    const sba = Number(row.sba) || 0;
+    const value = Number(row.value) || 0;
+    shareSum += totalValue ? row.value / totalValue * 100 : 0;
+    const tooltip = (amount, label) => statusTooltip(
+      row,
+      `${row.wing} — ${label}`,
+      formatValue(amount),
+      `${label} for wing ${row.wing}`
+    );
+    // Total Units / Total SBA / Total Value (Mn): plain values, no hover tooltip
+    return `<tr>
+      <td class="serial-number">${index + 1}</td>
+      <td class="analysis-location-name">${escapeHTML(row.wing)}</td>
+      <td>${formatValue(row.units)}</td>
+      <td>${tooltip(row.inventory_units, 'inventory units')}</td>
+      <td>${formatValue(row.sba)}</td>
+      <td>${tooltip(row.inventory_sba, 'inventory SBA')}</td>
+      <td>${formatValue(row.value)}</td>
+      <td>${tooltip(row.inventory_value, 'inventory value')}</td>
+      <td>${formatPercent(totalValue ? row.value / totalValue * 100 : 0, 2)}</td>
+      <td>${statusSplitVisual(row.status_breakdown, 'value', `${project.project}, ${row.wing} value split`, 2)}</td>
+      <td><button type="button" class="analysis-go-to" data-goto-wing="${escapeHTML(row.wing)}" aria-label="Open unit category analysis for ${escapeHTML(project.project)}, wing ${escapeHTML(row.wing)}" title="Open unit category analysis">→</button></td>
+    </tr>`;
+  });
+
+  // TOTAL row (second row, right under the header) — column-wise sums
+  if (ordered.length) {
+    const sum = key => ordered.reduce((total, row) => total + (Number(row[key]) || 0), 0);
+    const totalBreakdown = sumBreakdowns(ordered.map(row => row.status_breakdown));
+    const totalRow = { status_breakdown: totalBreakdown };
+    const totalTooltip = (amount, label) => statusTooltip(totalRow, `TOTAL — ${label}`, formatValue(amount), `Total ${label}`);
+    html.unshift(`<tr class="total-row">
+      <td class="total-label">TOTAL</td>
+      <td></td>
+      <td>${formatValue(sum('units'))}</td>
+      <td>${totalTooltip(sum('inventory_units'), 'inventory units')}</td>
+      <td>${formatValue(sum('sba'))}</td>
+      <td>${totalTooltip(sum('inventory_sba'), 'inventory SBA')}</td>
+      <td>${formatValue(sum('value'))}</td>
+      <td>${totalTooltip(sum('inventory_value'), 'inventory value')}</td>
+      <td>${formatPercent(shareSum, 2)}</td>
+      <td>${statusSplitVisual(totalBreakdown, 'value', `${project.project} TOTAL value split`, 2)}</td>
+      <td></td>
+    </tr>`);
+  }
+
+  $('#wingSummaryRows').innerHTML = html.length
+    ? html.join('')
+    : '<tr><td class="location-summary-empty" colspan="11">No wing records match the selected filters.</td></tr>';
+  setStickyTotalOffset($('.wing-analysis-table'));
+}
+
+function categorySortRows(rows, sort, nameKey) {
+  return [...rows].sort((left, right) => {
+    const categoryName = sort.key.startsWith('category:') ? sort.key.slice('category:'.length) : null;
+    const categoryValue = row => statusMetricTotal(
+      analysisStatusBreakdown({ status_breakdown: row.categories?.[categoryName] || {} }),
+      'units'
+    );
+    const a = sort.key === 'serial'
+      ? rows.indexOf(left) + 1
+      : categoryName ? categoryValue(left) : left[sort.key];
+    const b = sort.key === 'serial'
+      ? rows.indexOf(right) + 1
+      : categoryName ? categoryValue(right) : right[sort.key];
+    const compare = typeof a === 'number' && typeof b === 'number'
+      ? a - b
+      : String(a ?? '').localeCompare(String(b ?? ''), undefined, { numeric: true, sensitivity: 'base' });
+    return compare * (sort.direction === 'ascending' ? 1 : -1) ||
+      String(left[nameKey]).localeCompare(String(right[nameKey]), undefined, { numeric: true, sensitivity: 'base' });
+  });
+}
+
+function renderCategorySummary(data) {
+  const rows = (Array.isArray(data.categories) ? data.categories : []).map(row => ({
+    ...row,
+    sold_percent_value: Number(row.total_value)
+      ? (Number(row.status_breakdown?.Sold?.value) || 0) / Number(row.total_value) * 100
+      : 0
+  }));
+  const selectedStatuses = ucStatusDD?.get() || ['Unsold', 'Unreleased'];
+  const totalBreakdown = Object.fromEntries(statusNames.map(status => [status, {
+    units: Number(data.summary.units?.[status]) || 0,
+    sba: Number(data.summary.sba?.[status]) || 0,
+    value: Number(data.summary.value?.[status]) || 0
+  }]));
+  const totalUnits = statusMetricTotal(totalBreakdown, 'units');
+  const totalSba = statusMetricTotal(totalBreakdown, 'sba');
+  const totalValue = statusMetricTotal(totalBreakdown, 'value');
+  const inventoryUnits = statusMetricTotal(totalBreakdown, 'units', selectedStatuses);
+  const inventorySba = statusMetricTotal(totalBreakdown, 'sba', selectedStatuses);
+  const inventoryValue = statusMetricTotal(totalBreakdown, 'value', selectedStatuses);
+  const totalRow = {
+    category: 'TOTAL',
+    total_units: totalUnits,
+    inventory_units: inventoryUnits,
+    total_sba: totalSba,
+    inventory_sba: inventorySba,
+    total_value: totalValue,
+    inventory_value: inventoryValue,
+    status_breakdown: totalBreakdown
+  };
+  const ordered = categorySortRows(rows, categorySort, 'category');
+  const displayRows = [totalRow, ...ordered];
+  const html = displayRows.map((row, index) => {
+    const isTotal = index === 0;
+    return `<tr class="${isTotal ? 'total-row' : ''}">
+      <td class="${isTotal ? 'total-label' : 'serial-number'}">${isTotal ? 'TOTAL' : index}</td>
+      <td class="analysis-location-name">${isTotal ? '' : escapeHTML(row.category)}</td>
+      <td>${formatValue(row.total_units)}</td>
+      <td>${formatValue(row.inventory_units)}</td>
+      <td>${formatValue(row.total_sba)}</td>
+      <td>${formatValue(row.inventory_sba)}</td>
+      <td>${formatValue(row.total_value)}</td>
+      <td>${formatValue(row.inventory_value)}</td>
+      <td>${statusSplitVisual(row.status_breakdown, 'value', `${row.category} value split`, 2)}</td>
+    </tr>`;
+  });
+  $('#unitCategoryRows').innerHTML = ordered.length
+    ? html.join('')
+    : '<tr><td class="location-summary-empty" colspan="9">No unit categories match the selected filters.</td></tr>';
+  $$('#categorySummaryTable .analysis-sort-button').forEach(button => {
+    $('span', button).textContent = button.dataset.sort === categorySort.key
+      ? (categorySort.direction === 'ascending' ? '↑' : '↓')
+      : '';
+  });
+}
+
+function renderCategoryDetail(data) {
+  const categories = (Array.isArray(data.categories) ? data.categories : []).map(row => row.category);
+  const wings = categorySortRows(Array.isArray(data.wings) ? data.wings : [], categoryWingSort, 'wing');
+  $('#categoryDetailHead').innerHTML = `<tr>
+    <th><button class="analysis-sort-button" data-sort="serial" type="button">S.No <span></span></button></th>
+    <th><button class="analysis-sort-button" data-sort="wing" type="button">Wings <span></span></button></th>
+    <th><button class="analysis-sort-button" data-sort="total_units" type="button">Units <span></span></button></th>
+    ${categories.map((category, index) => `<th class="category-cell">
+      <button class="analysis-sort-button" data-sort="category:${index}" type="button">${escapeHTML(category)} <span></span></button>
+    </th>`).join('')}
+  </tr>`;
+const metrics = [
+  { key: 'units', label: 'Units', digits: 0 }
+];
+  $('#categoryDetailRows').innerHTML = wings.length
+    ? wings.map((wing, index) => {
+      const categoryCells = categories.map(category => {
+        const breakdown = analysisStatusBreakdown({
+          status_breakdown: wing.categories?.[category] || {}
+        });
+        const cellMetrics = metrics.map(metric => {
+          const total = statusMetricTotal(breakdown, metric.key);
+          const sold = Number(breakdown.Sold?.[metric.key]) || 0;
+          // No Sold / Unsold / Unreleased values -> no visual, no tooltip, just "-"
+          if (!total) {
+            return `<div class="category-metric-empty" style="display:block;text-align:center;color:var(--ink-soft);font:10px var(--mono);">-</div>`;
+          }
+          const segments = statusNames.map(status => {
+            const amount = Number(breakdown[status]?.[metric.key]) || 0;
+            const width = total ? amount / total * 100 : 0;
+            return `<span class="status-split-segment ${status.toLocaleLowerCase()}" style="width:${width}%"></span>`;
+          }).join('');
+          const visual = `<span class="category-mini-bar">${segments}</span>`;
+          const tooltip = statusTooltip(
+            { status_breakdown: breakdown },
+            `${wing.wing} — ${category} ${metric.label}`,
+            visual,
+            `${category} ${metric.label} by Sold, Unsold, and Unreleased status`
+          );
+          return `<div class="category-metric">
+            ${tooltip}
+            <span class="category-metric-value">${formatValue(sold, metric.digits)}</span>
+          </div>`;
+        }).join('');
+        return `<td class="category-cell">${cellMetrics}</td>`;
+      }).join('');
+      return `<tr>
+        <td class="serial-number">${index + 1}</td>
+        <td class="analysis-location-name">${escapeHTML(wing.wing)}</td>
+        <td>${formatValue(wing.total_units)}</td>
+        ${categoryCells}
+      </tr>`;
+    }).join('')
+    : `<tr><td class="location-summary-empty" colspan="${categories.length + 3}">No wing details match the selected filters.</td></tr>`;
+  $$('#categoryDetailTable .analysis-sort-button').forEach(button => {
+    $('span', button).textContent = button.dataset.sort === categoryWingSort.key
+      ? (categoryWingSort.direction === 'ascending' ? '↑' : '↓')
+      : '';
+  });
+}
+
+async function refreshUnitWings(preferredWing = null) {
+  const requestId = ++unitWingOptionsRequest;
+  const locations = ucLocationDD.get();
+  const projects = ucProjectDD.get();
+  if (!locations.length || !projects.length) {
+    ucWingsDD.setOptions([]);
+    await runUnitCategoryAnalysis();
+    return;
+  }
+  try {
+    const wings = await fetchJSON('/wings-by-project', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ location: locations, project: projects })
+    });
+    if (requestId !== unitWingOptionsRequest) return;
+    ucWingsDD.setOptions(wings);
+    if (!unitWingsInitialized) {
+      if (preferredWing && wings.includes(preferredWing)) {
+        ucWingsDD.setSelection([preferredWing]);
+      } else {
+        ucWingsDD.selectAll();
+      }
+      unitWingsInitialized = true;
+    }
+    await runUnitCategoryAnalysis();
+  } catch (exception) {
+    if (requestId !== unitWingOptionsRequest) return;
+    const error = $('#ucFilterError');
+    error.textContent = `Unable to load unit category wings: ${exception.message}`;
+    error.hidden = false;
+  }
+}
+
+async function runUnitCategoryAnalysis() {
+  const requestId = ++unitCategoryRequest;
+  const error = $('#ucFilterError');
+  error.hidden = true;
+  error.textContent = '';
+  const filters = {
+    location: ucLocationDD.get(),
+    project: ucProjectDD.get(),
+    wings: ucWingsDD.get(),
+    category: ucCategoryDD.get().length ? ucCategoryDD.get() : ['__no_matching_category__'],
+    status: ucStatusDD.get()
+  };
+  if (!filters.location.length || !filters.project.length || !filters.wings.length) {
+    $('#ucKpiGrid').innerHTML = '';
+    $('#unitCategoryRows').innerHTML =
+      '<tr><td class="location-summary-empty" colspan="9">Choose location, project, and wings to view categories.</td></tr>';
+    $('#categoryDetailRows').innerHTML =
+      '<tr><td class="location-summary-empty" colspan="3">Choose location, project, and wings to view wing details.</td></tr>';
+    return;
+  }
+  try {
+    const data = await fetchJSON('/unit-category-analysis', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(filters)
+    });
+    if (requestId !== unitCategoryRequest) return;
+    unitCategoryData = data;
+    ucCategoryDD.setOptions(data.category_options || []);
+    if (!unitCategoryInitialized) {
+      ucCategoryDD.selectAll();
+      unitCategoryInitialized = true;
+      await runUnitCategoryAnalysis();
+      return;
+    }
+    renderKPIs(data.summary, ucStatusDD.get(), '#ucKpiGrid', true);
+    renderCategorySummary(data);
+    renderCategoryDetail(data);
+  } catch (exception) {
+    if (requestId !== unitCategoryRequest) return;
+    error.textContent = `Unable to load unit category analysis: ${exception.message}`;
+    error.hidden = false;
+    $('#ucKpiGrid').innerHTML = '';
+    $('#unitCategoryRows').innerHTML =
+      '<tr><td class="location-summary-empty" colspan="9">Unit category analysis could not be loaded.</td></tr>';
+    $('#categoryDetailRows').innerHTML =
+      '<tr><td class="location-summary-empty" colspan="3">Wing details could not be loaded.</td></tr>';
+  }
+}
+
+async function runProjectAnalysis() {
+  const requestId = ++projectAnalysisRequest;
+  const error = $('#paFilterError');
+  error.hidden = true;
+  error.textContent = '';
+  const filters = {
+    location: paLocationDD.get(),
+    project: focusedProject ? [focusedProject] : paProjectDD.get(),
+    wings: paWingsDD.get(),
+    status: paStatusDD.get()
+  };
+  if (!filters.location.length || !filters.project.length || !filters.wings.length) {
+    $('#paKpiGrid').innerHTML = '';
+    projectAnalysisData = { projects: [], wings: [], total_sold_value: 0 };
+    renderProjectSummary(projectAnalysisData);
+    renderWingSummary(projectAnalysisData);
+    return;
+  }
+  try {
+    const data = await fetchJSON('/project-analysis', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(filters)
+    });
+    if (requestId !== projectAnalysisRequest) return;
+    projectAnalysisData = data;
+    renderKPIs(data.summary, paStatusDD.get(), '#paKpiGrid', true);
+    renderProjectSummary(data);
+    renderWingSummary(data);
+  } catch (exception) {
+    if (requestId !== projectAnalysisRequest) return;
+    error.textContent = `Unable to load project analysis: ${exception.message}`;
+    error.hidden = false;
+    $('#paKpiGrid').innerHTML = '';
+    $('#projectSummaryRows').innerHTML =
+      '<tr><td class="location-summary-empty" colspan="13">Project analysis could not be loaded.</td></tr>';
+    $('#wingSummaryRows').innerHTML =
+      '<tr><td class="location-summary-empty" colspan="11">Wing analysis could not be loaded.</td></tr>';
+  }
+}
+
+async function refreshProjectWings() {
+  const requestId = ++wingOptionsRequest;
+  const filters = {
+    location: paLocationDD.get(),
+    project: focusedProject ? [focusedProject] : paProjectDD.get(),
+    status: paStatusDD.get()
+  };
+  if (!filters.location.length || !filters.project.length) {
+    paWingsDD.setOptions([]);
+    await runProjectAnalysis();
+    return;
+  }
+  try {
+    const wings = await fetchJSON('/wings-by-project', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(filters)
+    });
+    if (requestId !== wingOptionsRequest) return;
+    paWingsDD.setOptions(wings);
+    if (selectAllWingsOnRefresh) {
+      paWingsDD.selectAll();
+      selectAllWingsOnRefresh = false;
+    }
+    await runProjectAnalysis();
+  } catch (exception) {
+    if (requestId !== wingOptionsRequest) return;
+    const error = $('#paFilterError');
+    error.textContent = `Unable to load project wings: ${exception.message}`;
+    error.hidden = false;
+    $('#paKpiGrid').innerHTML = '';
+  }
+}
+
+$('#projectSummaryRows').addEventListener('dblclick', event => {
+  const projectCell = event.target.closest('[data-focus-project]');
+  if (!projectCell) return;
+  const project = projectCell.dataset.focusProject;
+  focusedProject = focusedProject === project ? null : project;
+  refreshProjectWings();
+});
+$('#projectSummaryRows').addEventListener('click', event => {
+  const button = event.target.closest('[data-goto-project]');
+  if (button) {
+    const project = (projectAnalysisData?.projects || []).find(row => row.project === button.dataset.gotoProject);
+    openUnitCategory(button.dataset.gotoProject, project?.location?.split(', ')[0]);
+  }
+});
+$('#wingSummaryRows').addEventListener('click', event => {
+  const button = event.target.closest('[data-goto-wing]');
+  if (button && focusedProject) {
+    const project = (projectAnalysisData?.projects || []).find(row => row.project === focusedProject);
+    openUnitCategory(focusedProject, project?.location?.split(', ')[0], button.dataset.gotoWing);
+  }
+});
+
+async function openUnitCategory(project, location, wing = null) {
+  const selectedLocation = location || paLocationDD.get()[0];
+  if (!selectedLocation) {
+    $('#ucFilterError').textContent = 'Unable to open unit category analysis: the project location is unavailable.';
+    $('#ucFilterError').hidden = false;
+    return;
+  }
+  ucLocationDD.setSelection([selectedLocation]);
+  const matchingProjects = projectsByLocation[selectedLocation] || [project];
+  ucProjectDD.setOptions(matchingProjects);
+  ucProjectDD.setSelection([project]);
+  unitCategoryInitialized = false;
+  unitWingsInitialized = false;
+  ucStatusDD.setSelection(allStatuses.filter(status =>
+    ['unsold', 'unreleased'].includes(status.toLocaleLowerCase())
+  ));
+  activateView('unit');
+  window.scrollTo(0, 0);
+  await refreshUnitWings(wing);
+}
+
+function bindAnalysisSorting(tableSelector, sortState, render) {
+  $(`${tableSelector} thead`).addEventListener('click', event => {
+    const button = event.target.closest('.analysis-sort-button');
+    if (!button || !projectAnalysisData) return;
+    if (sortState.key === button.dataset.sort) {
+      sortState.direction = sortState.direction === 'ascending' ? 'descending' : 'ascending';
+    } else {
+      sortState.key = button.dataset.sort;
+      sortState.direction = 'ascending';
+    }
+    $$('.analysis-sort-button', $(tableSelector)).forEach(item => {
+      $('span', item).textContent = item === button ? (sortState.direction === 'ascending' ? '↑' : '↓') : '';
+    });
+    render(projectAnalysisData);
+  });
+}
+bindAnalysisSorting('.analysis-table:not(.wing-analysis-table)', projectSort, renderProjectSummary);
+bindAnalysisSorting('.wing-analysis-table', wingSort, renderWingSummary);
+
+async function applyFilters() {
+  const filters = {
+    location: locationDD.get(),
+    project: projectDD.get(),
+    status: statusDD.get()
+  };
+  const requestId = ++summaryRequest;
+  const message = $('#filterError');
+  message.hidden = true;
+  message.textContent = '';
+  if (!filters.location.length || !filters.project.length) {
+    $('#kpiGrid').innerHTML = '';
+    locationSummaryData = { total: {}, locations: [] };
+    renderLocationTable(locationSummaryData);
+    return;
+  }
+
+  try {
+    const request = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(filters)
+    };
+    const [summary, locations] = await Promise.all([
+      fetchJSON('/inventory-summary', request),
+      fetchJSON('/location-summary', request)
+    ]);
+    if (requestId !== summaryRequest) return;
+    renderKPIs(summary.summary, filters.status);
+    locationSummaryData = locations;
+    renderLocationTable(locations);
+  } catch (error) {
+    if (requestId !== summaryRequest) return;
+    message.textContent = `Unable to load inventory data: ${error.message}`;
+    message.hidden = false;
+    $('#kpiGrid').innerHTML = '';
+    $('#locationSummaryRows').innerHTML =
+      '<tr><td class="location-summary-empty" colspan="11">Inventory summary could not be loaded.</td></tr>';
+  }
+}
+
+locationDD = Dropdown($('#fLocation'), {
+  options: [],
+  onChange: locations => {
+    projectDD.setOptions([...new Set(locations.flatMap(location => projectsByLocation[location] || []))]);
+    applyFilters();
+  }
+});
+projectDD = Dropdown($('#fProject'), {
+  options: [],
+  onChange: projects => {
+    if (projects.length) {
+      const matchingLocations = allLocations.filter(location =>
+        projects.some(project => projectsByLocation[location]?.includes(project))
+      );
+      locationDD.setSelection(matchingLocations);
+    }
+    applyFilters();
+  }
+});
+statusDD = Dropdown($('#fStatus'), {
+  options: allStatuses,
+  selected: ['Unsold', 'Unreleased'],
+  chips: true,
+  onChange: applyFilters
+});
+
+paLocationDD = Dropdown($('#paLocation'), {
+  options: [],
+  onChange: locations => {
+    focusedProject = null;
+    paProjectDD.setOptions([...new Set(locations.flatMap(location => projectsByLocation[location] || []))]);
+    refreshProjectWings();
+  }
+});
+paProjectDD = Dropdown($('#paProject'), {
+  options: [],
+  onChange: projects => {
+    focusedProject = null;
+    if (projects.length) {
+      const matchingLocations = allLocations.filter(location =>
+        projects.some(project => projectsByLocation[location]?.includes(project))
+      );
+      paLocationDD.setSelection(matchingLocations);
+    }
+    refreshProjectWings();
+  }
+});
+paWingsDD = Dropdown($('#paWings'), {
+  options: [],
+  onChange: runProjectAnalysis
+});
+paStatusDD = Dropdown($('#paStatus'), {
+  options: allStatuses,
+  selected: ['Unsold', 'Unreleased'],
+  chips: true,
+  onChange: runProjectAnalysis
+});
+
+ucLocationDD = Dropdown($('#ucLocation'), {
+  options: [],
+  onChange: locations => {
+    ucProjectDD.setOptions([...new Set(locations.flatMap(location => projectsByLocation[location] || []))]);
+    refreshUnitWings();
+  }
+});
+ucProjectDD = Dropdown($('#ucProject'), {
+  options: [],
+  onChange: projects => {
+    if (projects.length) {
+      const matchingLocations = allLocations.filter(location =>
+        projects.some(project => projectsByLocation[location]?.includes(project))
+      );
+      ucLocationDD.setSelection(matchingLocations);
+    }
+    refreshUnitWings();
+  }
+});
+ucWingsDD = Dropdown($('#ucWings'), {
+  options: [],
+  onChange: runUnitCategoryAnalysis
+});
+ucCategoryDD = Dropdown($('#ucCategory'), {
+  options: [],
+  onChange: runUnitCategoryAnalysis
+});
+ucStatusDD = Dropdown($('#ucStatus'), {
+  options: allStatuses,
+  selected: ['Unsold', 'Unreleased'],
+  chips: true,
+  onChange: runUnitCategoryAnalysis
+});
+
+$('#categorySummaryTable thead').addEventListener('click', event => {
+  const button = event.target.closest('.analysis-sort-button');
+  if (!button || !unitCategoryData) return;
+  categorySort.direction = categorySort.key === button.dataset.sort
+    ? (categorySort.direction === 'ascending' ? 'descending' : 'ascending')
+    : 'ascending';
+  categorySort.key = button.dataset.sort;
+  renderCategorySummary(unitCategoryData);
+});
+$('#categoryDetailTable thead').addEventListener('click', event => {
+  const button = event.target.closest('.analysis-sort-button');
+  if (!button || !unitCategoryData) return;
+  let key = button.dataset.sort;
+  if (key.startsWith('category:')) {
+    const categoryIndex = Number(key.slice('category:'.length));
+    key = `category:${unitCategoryData.categories[categoryIndex]?.category || ''}`;
+  }
+  categoryWingSort.direction = categoryWingSort.key === key
+    ? (categoryWingSort.direction === 'ascending' ? 'descending' : 'ascending')
+    : 'ascending';
+  categoryWingSort.key = key;
+  renderCategoryDetail(unitCategoryData);
+});
+
+$('#btnReset').addEventListener('click', () => {
+  locationDD.selectAll();
+  projectDD.setOptions(allProjects);
+  projectDD.selectAll();
+  statusDD.setOptions(allStatuses);
+  statusDD.setSelection(allStatuses.filter(status =>
+    ['unsold', 'unreleased'].includes(status.toLocaleLowerCase())
+  ));
+  applyFilters();
+});
+
+$('#paReset').addEventListener('click', () => {
+  focusedProject = null;
+  selectAllWingsOnRefresh = true;
+  paLocationDD.selectAll();
+  paProjectDD.setOptions(allProjects);
+  paProjectDD.selectAll();
+  paWingsDD.setOptions([]);
+  paStatusDD.setSelection(allStatuses.filter(status =>
+    ['unsold', 'unreleased'].includes(status.toLocaleLowerCase())
+  ));
+  refreshProjectWings();
+});
+
+$('#ucReset').addEventListener('click', () => {
+  ucLocationDD.selectAll();
+  ucProjectDD.setOptions(allProjects);
+  ucProjectDD.selectAll();
+  ucWingsDD.setOptions([]);
+  ucCategoryDD.setOptions([]);
+  unitCategoryInitialized = false;
+  unitWingsInitialized = false;
+  ucStatusDD.setOptions(allStatuses);
+  ucStatusDD.setSelection(allStatuses.filter(status =>
+    ['unsold', 'unreleased'].includes(status.toLocaleLowerCase())
+  ));
+  refreshUnitWings();
+});
+
+try {
+  const [projects, statuses] = await Promise.all([
+    fetchJSON('/projects-by-location'),
+    fetchJSON('/inventory-statuses')
+  ]);
+  projectsByLocation = projects;
+  allLocations = Object.keys(projectsByLocation);
+  allProjects = [...new Set(Object.values(projectsByLocation).flat())];
+  allStatuses = [...new Set([...statusNames, ...statuses])];
+  locationDD.setOptions(allLocations);
+  locationDD.selectAll();
+  projectDD.setOptions(allProjects);
+  projectDD.selectAll();
+  statusDD.setOptions(allStatuses);
+  statusDD.setSelection(allStatuses.filter(status => ['unsold', 'unreleased'].includes(status.toLocaleLowerCase())));
+  paStatusDD.setOptions(allStatuses);
+  paStatusDD.setSelection(allStatuses.filter(status => ['unsold', 'unreleased'].includes(status.toLocaleLowerCase())));
+  ucStatusDD.setOptions(allStatuses);
+  ucStatusDD.setSelection(allStatuses.filter(status => ['unsold', 'unreleased'].includes(status.toLocaleLowerCase())));
+  applyFilters();
+  paLocationDD.setOptions(allLocations);
+  paLocationDD.selectAll();
+  paProjectDD.setOptions(allProjects);
+  paProjectDD.selectAll();
+  refreshProjectWings();
+  ucLocationDD.setOptions(allLocations);
+  ucLocationDD.selectAll();
+  ucProjectDD.setOptions(allProjects);
+  ucProjectDD.selectAll();
+  refreshUnitWings();
+} catch (error) {
+  const message = $('#filterError');
+  message.textContent = `Unable to load inventory filters: ${error.message}`;
+  message.hidden = false;
+  $('#locationSummaryRows').innerHTML =
+    '<tr><td class="location-summary-empty" colspan="11">Inventory filters could not be loaded.</td></tr>';
+}
+</script>
+</body>
+</html>
